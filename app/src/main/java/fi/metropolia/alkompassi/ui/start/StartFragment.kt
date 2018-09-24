@@ -7,8 +7,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.fragment.app.FragmentManager
 import androidx.navigation.Navigation
+import com.google.android.gms.maps.SupportMapFragment
 import fi.metropolia.alkompassi.R
+
 
 class StartFragment : Fragment() {
 
@@ -21,13 +24,7 @@ class StartFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
 
-        // Set up a click listener on the login button
-        view?.findViewById<Button>(R.id.toEndButton)?.setOnClickListener {
-            // Navigate to the login destination
-            view?.let { Navigation.findNavController(it).navigate(R.id.end) }
-        }
-
-        return inflater.inflate(R.layout.start_fragment, container, false)
+        return inflater.inflate(R.layout.activity_maps, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
