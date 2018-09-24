@@ -10,6 +10,6 @@ class StartViewModel : ViewModel() {
         get() = _data
 
     init {
-        _data.value = "Hello, Jetpack!"
+        _data.value = "Hello!"
     }
 }
