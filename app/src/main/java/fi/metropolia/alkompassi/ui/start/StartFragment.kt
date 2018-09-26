@@ -6,14 +6,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import androidx.fragment.app.FragmentManager
-import androidx.navigation.Navigation
-import com.google.android.gms.maps.SupportMapFragment
 import fi.metropolia.alkompassi.R
+import android.content.Intent
+import kotlinx.android.synthetic.main.start_fragment.*
 
 
 class StartFragment : Fragment() {
+
+    lateinit var v : View
 
     companion object {
         fun newInstance() = StartFragment()
@@ -21,16 +21,24 @@ class StartFragment : Fragment() {
 
     private lateinit var viewModel: StartViewModel
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
-        return inflater.inflate(R.layout.activity_maps, container, false)
+        v  = inflater.inflate(R.layout.start_fragment, container, false)
+        return v
     }
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(StartViewModel::class.java)
-        // TODO: Use the ViewModel
+
+        getMapsButton.setOnClickListener{
+            startMapsActivity(v)
+        }
     }
 
+    fun startMapsActivity(view: View) {
+        val intent = Intent(view.context, MapsActivity::class.java)
+        startActivity(intent)
+    }
 }
