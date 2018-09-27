@@ -23,6 +23,7 @@ out/
 .gradle
 .gradle/
 build/
+gradle/
 
 # Signing files
 .signing/
@@ -84,6 +85,7 @@ obj/
 .idea/sqlDataSources.xml
 .idea/dynamic.xml
 .idea/uiDesigner.xml
+.idea/
 
 # OS-specific files
 .DS_Store
