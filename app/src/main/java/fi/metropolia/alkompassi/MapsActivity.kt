@@ -7,6 +7,10 @@ import fi.metropolia.alkompassi.maps.MapsFragment
 
 class MapsActivity : AppCompatActivity(){
 
+    companion object {
+        fun newInstance() = MapsActivity()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.maps_activity)

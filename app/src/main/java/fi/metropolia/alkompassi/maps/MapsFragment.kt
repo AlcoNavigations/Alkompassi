@@ -3,9 +3,7 @@ package fi.metropolia.alkompassi.maps
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
+import android.location.*
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,13 +16,26 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.maps.*
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import fi.metropolia.alkompassi.R
+import fi.metropolia.alkompassi.Remote.IGoogleAPIService
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 
 class MapsFragment : Fragment(), LocationListener {
 
     private val dialogRequest = 9001
+
+    private val wikiApiServe by lazy {
+        IGoogleAPIService.create()
+    }
+    private var disposable: Disposable? = null
+
 
     companion object {
         fun newInstance() = MapsFragment()
@@ -93,6 +104,39 @@ class MapsFragment : Fragment(), LocationListener {
 
     }
 
+    private fun beginSearch() {
+
+        val searchablePlace = "alko"
+        val radius = "2000"
+        val apiKey = "AIzaSyDr5EFKYZWL2E33Bvi46bPEEg0pOqS0rq4"
+
+        val coder = Geocoder(context)
+        var address : List<Address>
+
+
+        disposable =
+                wikiApiServe.getAlkoAddresses(
+                        searchablePlace,
+                        "textquery",
+                        "photos,formatted_address,name,opening_hours,rating",
+                        "circle:$radius@$myLat,$myLon",
+                        apiKey)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                { result -> Log.d("Osoite: ", result.candidates[0].formatted_address)
+                                    address = coder.getFromLocationName(result.candidates[0].formatted_address,1)
+                                    val alkoLat = address[0].latitude
+                                    val alkoLon = address[0].longitude
+                                    val alkoLoc = LatLng(alkoLat,alkoLon)
+                                    mMap?.addMarker(MarkerOptions().position(alkoLoc))
+                                }
+
+                                ,
+                                { error -> Log.d("Error: ",error.message) }
+                        )
+    }
+
     override fun onResume() {
         super.onResume()
         mapView.onResume()
@@ -128,5 +172,6 @@ class MapsFragment : Fragment(), LocationListener {
                 return
             }
         }
+
     }
 }
