@@ -5,21 +5,19 @@ import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import fi.metropolia.alkompassi.Remote.IGoogleAPIService
+import fi.metropolia.alkompassi.remote.IGoogleAPIService
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import androidx.lifecycle.MutableLiveData
-
+import io.reactivex.disposables.CompositeDisposable
 
 
 class MapsViewModel : ViewModel() {
 
     private var nearAlkos: MutableLiveData<LatLng>? = MutableLiveData()
+    private val compositeDisposable: CompositeDisposable = CompositeDisposable()
 
     fun getNearAlkos(): MutableLiveData<LatLng>? {
         return nearAlkos
@@ -36,7 +34,7 @@ class MapsViewModel : ViewModel() {
         val apiKey = "AIzaSyDr5EFKYZWL2E33Bvi46bPEEg0pOqS0rq4"
 
         val coder = Geocoder(context)
-        var address : List<Address>
+        var address : Address
 
         val disposable =
                 wikiApiServe.getAlkoAddresses(
@@ -48,15 +46,22 @@ class MapsViewModel : ViewModel() {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                { result -> Log.d("Osoite: ", result.candidates[0].formatted_address)
-                                    address = coder.getFromLocationName(result.candidates[0].formatted_address,1)
-                                    val alkoLat = address[0].latitude
-                                    val alkoLon = address[0].longitude
-                                    nearAlkos?.value = LatLng(alkoLat,alkoLon)
+                                { result ->
+                                    for (alko in result.candidates) {
+                                        Log.d("Osoite: ", alko.formatted_address)
+                                        address = coder.getFromLocationName(alko.formatted_address,1)[0]
+                                        val alkoLat = address.latitude
+                                        val alkoLon = address.longitude
+                                        nearAlkos?.value = LatLng(alkoLat,alkoLon)
+                                    }
+
                                 }
                                 ,
                                 { error -> Log.d("Error: ",error.message) }
                         )
+        if (disposable != null) compositeDisposable.add(disposable)
     }
+
+
 
 }

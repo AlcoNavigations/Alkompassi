@@ -3,7 +3,9 @@ package fi.metropolia.alkompassi.maps
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.location.*
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -23,15 +25,10 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import fi.metropolia.alkompassi.R
-import fi.metropolia.alkompassi.Remote.IGoogleAPIService
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 
 class MapsFragment : Fragment(), LocationListener {
 
     private val dialogRequest = 9001
-    private var disposable: Disposable? = null
 
     companion object {
         fun newInstance() = MapsFragment()
@@ -62,15 +59,17 @@ class MapsFragment : Fragment(), LocationListener {
             }
 
             val lm = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            val location = updateLocation()
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
-            viewModel.beginSearch(context!!, location)
+
 
             if (googleMap != null) mMap = googleMap
-            val myLoc = LatLng(location.latitude, location.longitude)
+            val myLoc = LatLng(location!!.latitude, location.longitude)
             mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 16F))
             mMap?.isMyLocationEnabled = true
 
+            viewModel.beginSearch(context!!, location)
+            
             // Listen for the Alko locations
             viewModel.getNearAlkos()?.observe(this, Observer<LatLng> { mMap?.addMarker(MarkerOptions().position(it))})
 
@@ -94,6 +93,24 @@ class MapsFragment : Fragment(), LocationListener {
             GoogleApiAvailability.getInstance().getErrorDialog(activity, availability, dialogRequest)
         }
 
+    }
+
+    fun updateLocation() : Location? {
+        if (( ContextCompat.checkSelfPermission(context!!, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            ActivityCompat.requestPermissions(activity as Activity, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
+        }
+
+        val lm = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val providers : List<String> = lm.getProviders(true)
+        var bestLocation: Location? = null
+
+        for (provider in providers) {
+            val location = lm.getLastKnownLocation(provider) ?: continue
+            if (bestLocation == null || location.accuracy < bestLocation.accuracy) {
+                bestLocation = location
+            }
+        }
+        return bestLocation
     }
 
 
