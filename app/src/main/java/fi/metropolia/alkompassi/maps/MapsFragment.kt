@@ -36,7 +36,6 @@ class MapsFragment : Fragment(), LocationListener {
     }
     private var disposable: Disposable? = null
 
-
     companion object {
         fun newInstance() = MapsFragment()
     }
@@ -109,6 +108,7 @@ class MapsFragment : Fragment(), LocationListener {
         val searchablePlace = "alko"
         val radius = "2000"
         val apiKey = "AIzaSyDr5EFKYZWL2E33Bvi46bPEEg0pOqS0rq4"
+
 
         val coder = Geocoder(context)
         var address : List<Address>
