@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -30,10 +31,6 @@ import io.reactivex.schedulers.Schedulers
 class MapsFragment : Fragment(), LocationListener {
 
     private val dialogRequest = 9001
-
-    private val wikiApiServe by lazy {
-        IGoogleAPIService.create()
-    }
     private var disposable: Disposable? = null
 
     companion object {
@@ -67,13 +64,16 @@ class MapsFragment : Fragment(), LocationListener {
             val lm = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             val location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
+            viewModel.beginSearch(context!!, location)
 
             if (googleMap != null) mMap = googleMap
-            // Add a marker in Sydney and move the camera
             val myLoc = LatLng(location.latitude, location.longitude)
             mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 16F))
-
             mMap?.isMyLocationEnabled = true
+
+            // Listen for the Alko locations
+            viewModel.getNearAlkos()?.observe(this, Observer<LatLng> { mMap?.addMarker(MarkerOptions().position(it))})
+
             mMap?.setOnMyLocationButtonClickListener {
                 Toast.makeText(context, "MyLocation button clicked", Toast.LENGTH_SHORT).show()
                 false
@@ -101,40 +101,6 @@ class MapsFragment : Fragment(), LocationListener {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(MapsViewModel::class.java)
 
-    }
-
-    private fun beginSearch() {
-
-        val searchablePlace = "alko"
-        val radius = "2000"
-        val apiKey = "AIzaSyDr5EFKYZWL2E33Bvi46bPEEg0pOqS0rq4"
-
-
-        val coder = Geocoder(context)
-        var address : List<Address>
-
-
-        disposable =
-                wikiApiServe.getAlkoAddresses(
-                        searchablePlace,
-                        "textquery",
-                        "photos,formatted_address,name,opening_hours,rating",
-                        "circle:$radius@$myLat,$myLon",
-                        apiKey)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                { result -> Log.d("Osoite: ", result.candidates[0].formatted_address)
-                                    address = coder.getFromLocationName(result.candidates[0].formatted_address,1)
-                                    val alkoLat = address[0].latitude
-                                    val alkoLon = address[0].longitude
-                                    val alkoLoc = LatLng(alkoLat,alkoLon)
-                                    mMap?.addMarker(MarkerOptions().position(alkoLoc))
-                                }
-
-                                ,
-                                { error -> Log.d("Error: ",error.message) }
-                        )
     }
 
     override fun onResume() {
