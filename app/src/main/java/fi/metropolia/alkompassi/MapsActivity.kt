@@ -2,16 +2,19 @@ package fi.metropolia.alkompassi
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import fi.metropolia.alkompassi.ui.start.StartFragment
+import fi.metropolia.alkompassi.maps.MapsFragment
 
-class StartActivity : AppCompatActivity() {
+
+class MapsActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.start_activity)
+        setContentView(R.layout.maps_activity)
+
+
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, StartFragment.newInstance())
+                    .replace(R.id.container, MapsFragment.newInstance())
                     .commitNow()
         }
     }
