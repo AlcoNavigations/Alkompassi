@@ -8,6 +8,7 @@ import android.util.Log
 
 class LocationActivity  : Activity(), LocationListener {
 
+
     override fun onLocationChanged(p0: Location?) {
 
         Log.d("GEOLOCATION", "new latitude: ${p0?.latitude} and longitude: ${p0?.longitude}")

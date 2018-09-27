@@ -3,12 +3,8 @@ package fi.metropolia.alkompassi.maps
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
-import android.os.Build
+import android.location.*
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,15 +16,27 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import fi.metropolia.alkompassi.R
+import fi.metropolia.alkompassi.Remote.IGoogleAPIService
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.maps_fragment.*
 
 class MapsFragment : Fragment(), LocationListener {
 
     val ERROR_DIALOG_REQUEST = 9001
+
+    val wikiApiServe by lazy {
+        IGoogleAPIService.create()
+    }
+    var disposable: Disposable? = null
 
 
     companion object {
@@ -72,6 +80,7 @@ class MapsFragment : Fragment(), LocationListener {
 
             refreshButton.setOnClickListener {
                 refreshLocation(lm.getLastKnownLocation(LocationManager.GPS_PROVIDER))
+                beginSearch()
             }
         }
 
@@ -93,8 +102,47 @@ class MapsFragment : Fragment(), LocationListener {
 
     }
 
+    private fun beginSearch() {
+
+        val searchablePlace : String
+        val radius: String
+        val apiKey : String
+
+        val coder = Geocoder(context)
+        var address : List<Address>
+
+
+        searchablePlace = "alko"
+        radius = "2000"
+        apiKey = "AIzaSyDr5EFKYZWL2E33Bvi46bPEEg0pOqS0rq4"
+
+        disposable =
+                wikiApiServe.getAlkoAddresses(
+                        "$searchablePlace",
+                        "textquery",
+                        "photos,formatted_address,name,opening_hours,rating",
+                        "circle:$radius@$myLat,$myLon",
+                        "$apiKey")
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                { result -> Log.d("Osoite: ", result.candidates[0].formatted_address)
+                                    address = coder.getFromLocationName(result.candidates[0].formatted_address,1)
+                                    var alkoLat = address.get(0).latitude
+                                    var alkoLon = address.get(0).longitude
+                                    var alkoLoc = LatLng(alkoLat,alkoLon)
+                                    mMap?.addMarker(MarkerOptions().position(alkoLoc))
+                                }
+
+                                ,
+                                { error -> Log.d("Error: ",error.message) }
+                        )
+    }
+
+
     private fun refreshLocation(p0: Location?) {
         if (p0 != null) {
+            Log.d("LATLON:", p0.toString())
             prevLat = myLat
             prevLon = myLon
             myLat = p0.latitude
@@ -143,5 +191,6 @@ class MapsFragment : Fragment(), LocationListener {
                 return
             }
         }
+
     }
 }
