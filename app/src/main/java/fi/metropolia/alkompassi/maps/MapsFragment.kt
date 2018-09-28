@@ -41,6 +41,7 @@ class MapsFragment : Fragment(), LocationListener {
 
     private var myLat: Double = 0.0
     private var myLon: Double = 0.0
+    private var location : Location? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         v = inflater.inflate(R.layout.maps_fragment, container, false)
@@ -59,16 +60,16 @@ class MapsFragment : Fragment(), LocationListener {
             }
 
             val lm = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val location = updateLocation()
+            location = updateLocation()
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
 
 
             if (googleMap != null) mMap = googleMap
-            val myLoc = LatLng(location!!.latitude, location.longitude)
+            val myLoc = LatLng(location!!.latitude, location!!.longitude)
             mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 16F))
             mMap?.isMyLocationEnabled = true
 
-            viewModel.beginSearch(context!!, location)
+            viewModel.beginSearch(context!!, location!!)
             
             // Listen for the Alko locations
             viewModel.getNearAlkos()?.observe(this, Observer<LatLng> { mMap?.addMarker(MarkerOptions().position(it))})
@@ -127,19 +128,17 @@ class MapsFragment : Fragment(), LocationListener {
 
 
     override fun onLocationChanged(p0: Location?) {
-        Log.d("GEOLOCATION", "new latitude: $myLat and longitude: $myLon altitude: ${p0?.altitude} ")
+        Log.d("GEOLOCATION", "new latitude: ${p0?.latitude} and longitude: ${p0?.longitude} altitude: ${p0?.altitude} ")
+        location = p0
     }
 
     override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onProviderEnabled(p0: String?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onProviderDisabled(p0: String?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
