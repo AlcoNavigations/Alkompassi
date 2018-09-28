@@ -15,11 +15,15 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.maps.*
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import fi.metropolia.alkompassi.R
 
 class MapsFragment : Fragment(), LocationListener {
@@ -35,8 +39,7 @@ class MapsFragment : Fragment(), LocationListener {
     private var mMap: GoogleMap? = null
     private lateinit var v: View
 
-    private var myLat: Double = 0.0
-    private var myLon: Double = 0.0
+    private var location : Location? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         v = inflater.inflate(R.layout.maps_fragment, container, false)
@@ -55,15 +58,20 @@ class MapsFragment : Fragment(), LocationListener {
             }
 
             val lm = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            location = updateLocation()
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
 
-            if (googleMap != null) mMap = googleMap
-            // Add a marker in Sydney and move the camera
-            val myLoc = LatLng(location.latitude, location.longitude)
-            mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 16F))
 
+            if (googleMap != null) mMap = googleMap
+            val myLoc = LatLng(location!!.latitude, location!!.longitude)
+            mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 16F))
             mMap?.isMyLocationEnabled = true
+
+            viewModel.beginSearch(location!!)
+            
+            // Listen for the Alko locations
+            viewModel.getNearAlkos()?.observe(this, Observer<LatLng> { mMap?.addMarker(MarkerOptions().position(it))})
+
             mMap?.setOnMyLocationButtonClickListener {
                 Toast.makeText(context, "MyLocation button clicked", Toast.LENGTH_SHORT).show()
                 false
@@ -86,6 +94,24 @@ class MapsFragment : Fragment(), LocationListener {
 
     }
 
+    fun updateLocation() : Location? {
+        if (( ContextCompat.checkSelfPermission(context!!, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            ActivityCompat.requestPermissions(activity as Activity, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
+        }
+
+        val lm = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val providers : List<String> = lm.getProviders(true)
+        var bestLocation: Location? = null
+
+        for (provider in providers) {
+            val location = lm.getLastKnownLocation(provider) ?: continue
+            if (bestLocation == null || location.accuracy < bestLocation.accuracy) {
+                bestLocation = location
+            }
+        }
+        return bestLocation
+    }
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -100,19 +126,17 @@ class MapsFragment : Fragment(), LocationListener {
 
 
     override fun onLocationChanged(p0: Location?) {
-        Log.d("GEOLOCATION", "new latitude: $myLat and longitude: $myLon altitude: ${p0?.altitude} ")
+        Log.d("GEOLOCATION", "new latitude: ${p0?.latitude} and longitude: ${p0?.longitude} altitude: ${p0?.altitude} ")
+        location = p0
     }
 
     override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onProviderEnabled(p0: String?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onProviderDisabled(p0: String?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -128,5 +152,6 @@ class MapsFragment : Fragment(), LocationListener {
                 return
             }
         }
+
     }
 }
