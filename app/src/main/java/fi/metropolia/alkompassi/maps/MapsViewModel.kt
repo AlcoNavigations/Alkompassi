@@ -1,8 +1,5 @@
 package fi.metropolia.alkompassi.maps
 
-import android.content.Context
-import android.location.Address
-import android.location.Geocoder
 import android.location.Location
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -12,7 +9,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import androidx.lifecycle.MutableLiveData
 import io.reactivex.disposables.CompositeDisposable
-
 
 class MapsViewModel : ViewModel() {
 
@@ -27,34 +23,30 @@ class MapsViewModel : ViewModel() {
         IGoogleAPIService.create()
     }
 
-    fun beginSearch(context: Context, location: Location) {
+    fun beginSearch(location: Location) {
 
         val searchablePlace = "alko"
-        val radius = "2000"
+        val radius = "5000"
         val apiKey = "AIzaSyDr5EFKYZWL2E33Bvi46bPEEg0pOqS0rq4"
 
-        val coder = Geocoder(context)
-        var address : Address
 
+        //Linter warnings are here because this IDE won't show parameter names if the parameter values aren't given in string format
+        //Do not erase!
         val disposable =
                 wikiApiServe.getAlkoAddresses(
-                        searchablePlace,
-                        "textquery",
-                        "photos,formatted_address,name,opening_hours,rating",
-                        "circle:$radius@${location.latitude},${location.longitude}",
-                        apiKey)
+                        "${location.latitude},${location.longitude}",
+                        "$radius",
+                        "alkoholi",
+                        "$searchablePlace",
+                        "$apiKey")
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 { result ->
-                                    for (alko in result.candidates) {
-                                        Log.d("Osoite: ", alko.formatted_address)
-                                        address = coder.getFromLocationName(alko.formatted_address,1)[0]
-                                        val alkoLat = address.latitude
-                                        val alkoLon = address.longitude
-                                        nearAlkos?.value = LatLng(alkoLat,alkoLon)
+                                    for (alko in result.results) {
+                                        Log.d("Alko found: ", "${alko.geometry.location.lat}" + "${alko.geometry.location.lng}")
+                                        nearAlkos?.value = LatLng(alko.geometry.location.lat,alko.geometry.location.lng)
                                     }
-
                                 }
                                 ,
                                 { error -> Log.d("Error: ",error.message) }

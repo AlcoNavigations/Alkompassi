@@ -9,13 +9,13 @@ import retrofit2.http.Query
 
 interface IGoogleAPIService {
 
-    @GET ("api/place/findplacefromtext/json?")
-    fun getAlkoAddresses(@Query("input") input: String,
-                         @Query("inputtype") inputtype: String,
-                         @Query("fields") fields: String,
-                         @Query("locationbias") locationbias: String,
+    @GET ("api/place/nearbysearch/json?")
+    fun getAlkoAddresses(@Query("location") location: String,
+                         @Query("radius") radius: String,
+                         @Query("type") type: String,
+                         @Query("keyword") keyword: String,
                          @Query("key") key: String):
-            Observable<Model.Result>
+            Observable<Model.Response>
 
 
     companion object {

@@ -39,8 +39,6 @@ class MapsFragment : Fragment(), LocationListener {
     private var mMap: GoogleMap? = null
     private lateinit var v: View
 
-    private var myLat: Double = 0.0
-    private var myLon: Double = 0.0
     private var location : Location? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -69,7 +67,7 @@ class MapsFragment : Fragment(), LocationListener {
             mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 16F))
             mMap?.isMyLocationEnabled = true
 
-            viewModel.beginSearch(context!!, location!!)
+            viewModel.beginSearch(location!!)
             
             // Listen for the Alko locations
             viewModel.getNearAlkos()?.observe(this, Observer<LatLng> { mMap?.addMarker(MarkerOptions().position(it))})

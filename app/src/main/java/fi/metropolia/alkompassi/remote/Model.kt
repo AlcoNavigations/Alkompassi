@@ -1,7 +1,8 @@
 package fi.metropolia.alkompassi.remote
 
 object Model {
-    data class Result(val candidates: List<Candidates>)
-    data class Candidates(val formatted_address: String)
-
+    data class Response(val results: List<Results>)
+    data class Results(val geometry: Geometry)
+    data class Geometry(val location: Location)
+    data class Location(val lat: Double, val lng: Double)
 }
