@@ -25,6 +25,7 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import fi.metropolia.alkompassi.R
+import fi.metropolia.alkompassi.datamodels.Alko
 
 class MapsFragment : Fragment(), LocationListener {
 
@@ -38,6 +39,7 @@ class MapsFragment : Fragment(), LocationListener {
     private lateinit var mapView: MapView
     private var mMap: GoogleMap? = null
     private lateinit var v: View
+    var alkos : MutableList<Alko> = mutableListOf()
 
     private var location : Location? = null
 
@@ -70,7 +72,10 @@ class MapsFragment : Fragment(), LocationListener {
             viewModel.beginSearch(location!!)
             
             // Listen for the Alko locations
-            viewModel.getNearAlkos()?.observe(this, Observer<LatLng> { mMap?.addMarker(MarkerOptions().position(it))})
+            viewModel.getNearAlkos()?.observe(this, Observer<Alko> {
+                mMap?.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
+                alkos.add(it)
+            })
 
             mMap?.setOnMyLocationButtonClickListener {
                 Toast.makeText(context, "MyLocation button clicked", Toast.LENGTH_SHORT).show()
@@ -80,7 +85,6 @@ class MapsFragment : Fragment(), LocationListener {
             mMap?.setOnMyLocationClickListener {
                 Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
             }
-
         }
 
         val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
