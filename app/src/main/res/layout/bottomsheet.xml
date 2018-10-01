@@ -19,5 +19,4 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-
 </androidx.constraintlayout.widget.ConstraintLayout>
