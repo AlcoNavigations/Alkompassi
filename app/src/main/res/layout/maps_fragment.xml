@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/db1_root"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    tools:context=".MapsActivity">
 
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/map"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    <include layout="@layout/map_screen"/>
+    <include layout="@layout/bottomsheet" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 
-</LinearLayout>

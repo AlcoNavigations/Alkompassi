@@ -3,6 +3,9 @@ package fi.metropolia.alkompassi.maps
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.drawable.Animatable2
+import android.graphics.drawable.Animatable2.AnimationCallback
+import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -11,12 +14,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -24,10 +30,16 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import fi.metropolia.alkompassi.R
+import fi.metropolia.alkompassi.adapters.AlkoListAdapter
 import fi.metropolia.alkompassi.datamodels.Alko
+import fi.metropolia.alkompassi.utils.MapHolder
 
-class MapsFragment : Fragment(), LocationListener {
+class MapsFragment : Fragment(), LocationListener, MapHolder {
+    override fun getLocation(): Location? {
+        return location
+    }
 
     private val dialogRequest = 9001
 
@@ -41,6 +53,17 @@ class MapsFragment : Fragment(), LocationListener {
     private lateinit var v: View
     var alkos : MutableList<Alko> = mutableListOf()
 
+    private lateinit var expandImageView: ImageView
+    private lateinit var collapseImageView: ImageView
+    private lateinit var expandAnimatable: Animatable2
+    private lateinit var collapseAnimatable: Animatable2
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+    private lateinit var bottomSheet: View
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var viewAdapter: RecyclerView.Adapter<*>
+    private lateinit var viewManager: RecyclerView.LayoutManager
+    private lateinit var bottomSheetHeader: View
+
     private var location : Location? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -50,6 +73,48 @@ class MapsFragment : Fragment(), LocationListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        expandImageView = v.findViewById(R.id.imageView_expand_animatable)
+        collapseImageView = v.findViewById(R.id.imageView_collapse_animatable)
+        expandAnimatable = expandImageView.drawable as Animatable2
+        collapseAnimatable = collapseImageView.drawable as Animatable2
+        bottomSheet = v.findViewById(R.id.bottom_sheet)
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        bottomSheetHeader = v.findViewById(R.id.bottom_sheet_header)
+        viewManager = LinearLayoutManager(context)
+        viewAdapter = AlkoListAdapter(alkos, context, this)
+
+        recyclerView = v.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
+            setHasFixedSize(false)
+            layoutManager = viewManager
+            adapter = viewAdapter
+        }
+
+        expandAnimatable.registerAnimationCallback(object: AnimationCallback() {
+            override fun onAnimationEnd(drawable: Drawable?) {
+                super.onAnimationEnd(drawable)
+                collapseImageView.visibility = View.VISIBLE
+                expandImageView.visibility = View.GONE
+            }
+        })
+
+        collapseAnimatable.registerAnimationCallback(object: AnimationCallback() {
+            override fun onAnimationEnd(drawable: Drawable?) {
+                super.onAnimationEnd(drawable)
+                collapseImageView.visibility = View.GONE
+                expandImageView.visibility = View.VISIBLE
+            }
+        })
+
+        bottomSheetHeader.setOnClickListener {
+            if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                collapseAnimatable.start()
+            } else {
+                bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                expandAnimatable.start()
+            }
+        }
+
         mapView = v.findViewById(R.id.map)
         mapView.onCreate(savedInstanceState)
 
@@ -69,12 +134,15 @@ class MapsFragment : Fragment(), LocationListener {
             mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 16F))
             mMap?.isMyLocationEnabled = true
 
+            mMap?.uiSettings?.isMapToolbarEnabled = false
+
             viewModel.beginSearch(location!!)
             
             // Listen for the Alko locations
             viewModel.getNearAlkos()?.observe(this, Observer<Alko> {
                 mMap?.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
                 alkos.add(it)
+                viewAdapter.notifyDataSetChanged()
             })
 
             mMap?.setOnMyLocationButtonClickListener {
