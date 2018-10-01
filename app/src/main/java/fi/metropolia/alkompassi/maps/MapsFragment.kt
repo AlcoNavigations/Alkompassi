@@ -2,6 +2,7 @@ package fi.metropolia.alkompassi.maps
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -17,6 +18,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -24,7 +28,11 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+
 import fi.metropolia.alkompassi.R
+import fi.metropolia.alkompassi.ar.ArFragment
+import kotlinx.android.synthetic.main.maps_activity.*
+import kotlinx.android.synthetic.main.maps_fragment.*
 
 class MapsFragment : Fragment(), LocationListener {
 
@@ -39,10 +47,12 @@ class MapsFragment : Fragment(), LocationListener {
     private var mMap: GoogleMap? = null
     private lateinit var v: View
 
+
     private var location : Location? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         v = inflater.inflate(R.layout.maps_fragment, container, false)
+
         return v
     }
 
@@ -79,6 +89,11 @@ class MapsFragment : Fragment(), LocationListener {
 
             mMap?.setOnMyLocationClickListener {
                 Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
+            }
+
+            button.setOnClickListener {
+                findNavController().navigate(R.id.action_ar)
+
             }
 
         }

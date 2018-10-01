@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/mapsFragment">
+
+    <fragment
+        android:id="@+id/mapsFragment"
+        android:name="fi.metropolia.alkompassi.maps.MapsFragment"
+        android:label="fragment_map"
+        tools:layout="@layout/maps_fragment" >
+        <action
+            android:id="@+id/action_ar"
+            app:destination="@id/arFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/arFragment"
+        android:name="fi.metropolia.alkompassi.ar.ArFragment"
+        tools:layout="@layout/ar_fragment" />
+</navigation>
