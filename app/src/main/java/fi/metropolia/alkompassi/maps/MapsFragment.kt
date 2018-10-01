@@ -85,15 +85,6 @@ class MapsFragment : Fragment(), LocationListener {
             mMap?.setOnMyLocationClickListener {
                 Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
             }
-
-            mMap!!.setOnMarkerClickListener {
-
-                val alkoDist = alkos.find { alko -> alko.lat == it.position.latitude && alko.lng == it.position.longitude }
-
-                Toast.makeText(context, alkoDist!!.name.toString() + "\nDistance: " + "%.2f".format(viewModel.distToAlko(alkoDist!!, location!!)) + " meters", Toast.LENGTH_LONG).show()
-                true
-            }
-
         }
 
         val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
