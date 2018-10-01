@@ -14,12 +14,12 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView2"
-        app:layout_constraintStart_toEndOf="@+id/imageView2"
-        app:layout_constraintTop_toTopOf="@+id/imageView2">
+        app:layout_constraintBottom_toBottomOf="@+id/imageView_icon"
+        app:layout_constraintStart_toEndOf="@+id/imageView_icon"
+        app:layout_constraintTop_toTopOf="@+id/imageView_icon">
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/textView_alko_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto"
@@ -30,7 +30,7 @@
             tools:layout_editor_absoluteY="5dp" />
 
         <TextView
-            android:id="@+id/textView3"
+            android:id="@+id/textView_alko_distance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto"
@@ -42,7 +42,7 @@
     </LinearLayout>
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/imageView_icon_background"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="16dp"
@@ -51,19 +51,21 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
         app:srcCompat="@drawable/alkolist_icon_background" />
 
     <ImageView
-        android:id="@+id/imageView2"
+        android:id="@+id/imageView_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView"
-        app:layout_constraintTop_toTopOf="@+id/imageView"
         app:srcCompat="@drawable/ic_round_local_bar_24px"
-        tools:layout_editor_absoluteX="24dp" />
+        app:layout_constraintTop_toTopOf="@id/imageView_icon_background"
+        app:layout_constraintBottom_toBottomOf="@id/imageView_icon_background"
+        app:layout_constraintStart_toStartOf="@id/imageView_icon_background"
+        app:layout_constraintEnd_toEndOf="@id/imageView_icon_background" />
 
     <ImageView
-        android:id="@+id/imageView3"
+        android:id="@+id/imageView_fav"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"

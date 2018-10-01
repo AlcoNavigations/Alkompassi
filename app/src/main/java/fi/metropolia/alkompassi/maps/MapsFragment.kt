@@ -3,7 +3,6 @@ package fi.metropolia.alkompassi.maps
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.drawable.Animatable
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.Animatable2.AnimationCallback
 import android.graphics.drawable.Drawable
@@ -22,7 +21,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.vectordrawable.graphics.drawable.Animatable2Compat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -32,9 +32,14 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import fi.metropolia.alkompassi.R
+import fi.metropolia.alkompassi.adapters.AlkoListAdapter
 import fi.metropolia.alkompassi.datamodels.Alko
+import fi.metropolia.alkompassi.utils.MapHolder
 
-class MapsFragment : Fragment(), LocationListener {
+class MapsFragment : Fragment(), LocationListener, MapHolder {
+    override fun getLocation(): Location? {
+        return location
+    }
 
     private val dialogRequest = 9001
 
@@ -54,6 +59,9 @@ class MapsFragment : Fragment(), LocationListener {
     private lateinit var collapseAnimatable: Animatable2
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var bottomSheet: View
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var viewAdapter: RecyclerView.Adapter<*>
+    private lateinit var viewManager: RecyclerView.LayoutManager
 
     private lateinit var bottomSheetHeader: View
 
@@ -70,9 +78,17 @@ class MapsFragment : Fragment(), LocationListener {
         collapseImageView = v.findViewById(R.id.imageView_collapse_animatable)
         expandAnimatable = expandImageView.drawable as Animatable2
         collapseAnimatable = collapseImageView.drawable as Animatable2
-        bottomSheetHeader = v.findViewById(R.id.bottom_sheet_header)
         bottomSheet = v.findViewById(R.id.bottom_sheet)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        bottomSheetHeader = v.findViewById(R.id.bottom_sheet_header)
+        viewManager = LinearLayoutManager(context)
+        viewAdapter = AlkoListAdapter(alkos, context, this)
+
+        recyclerView = v.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
+            setHasFixedSize(false)
+            layoutManager = viewManager
+            adapter = viewAdapter
+        }
 
         expandAnimatable.registerAnimationCallback(object: AnimationCallback() {
             override fun onAnimationEnd(drawable: Drawable?) {
@@ -127,6 +143,7 @@ class MapsFragment : Fragment(), LocationListener {
             viewModel.getNearAlkos()?.observe(this, Observer<Alko> {
                 mMap?.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
                 alkos.add(it)
+                viewAdapter.notifyDataSetChanged()
             })
 
             mMap?.setOnMyLocationButtonClickListener {
