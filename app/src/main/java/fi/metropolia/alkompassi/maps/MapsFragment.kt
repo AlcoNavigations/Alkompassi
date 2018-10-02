@@ -2,7 +2,6 @@ package fi.metropolia.alkompassi.maps
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -18,9 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -30,8 +27,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
 import fi.metropolia.alkompassi.R
-import fi.metropolia.alkompassi.ar.ArFragment
-import kotlinx.android.synthetic.main.maps_activity.*
+import fi.metropolia.alkompassi.data.TempData
 import kotlinx.android.synthetic.main.maps_fragment.*
 
 class MapsFragment : Fragment(), LocationListener {
@@ -143,6 +139,8 @@ class MapsFragment : Fragment(), LocationListener {
     override fun onLocationChanged(p0: Location?) {
         Log.d("GEOLOCATION", "new latitude: ${p0?.latitude} and longitude: ${p0?.longitude} altitude: ${p0?.altitude} ")
         location = p0
+        TempData.myLat = p0!!.latitude
+        TempData.myLng = p0!!.longitude
     }
 
     override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {

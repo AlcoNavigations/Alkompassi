@@ -1,58 +1,98 @@
 package fi.metropolia.alkompassi.ar
 
+import android.animation.ObjectAnimator
 import android.location.Location
-import android.location.LocationListener
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import com.google.ar.sceneform.ux.ArFragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
 import androidx.fragment.app.Fragment
-import com.google.android.gms.dynamic.SupportFragmentWrapper
+import com.google.ar.core.*
+import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.math.Quaternion
+import com.google.ar.sceneform.math.QuaternionEvaluator
+import com.google.ar.sceneform.math.Vector3
+import com.google.ar.sceneform.rendering.ModelRenderable
+import com.google.ar.sceneform.ux.BaseArFragment
+import com.google.ar.sceneform.ux.TransformableNode
 import fi.metropolia.alkompassi.R
-import kotlinx.android.synthetic.main.maps_activity.*
+import fi.metropolia.alkompassi.data.TempData
+import fi.metropolia.alkompassi.maps.MapsViewModel
 
+class ArFragment : Fragment(){
 
-class ArFragment : Fragment() /*LocationListener*/ {
-
-    private lateinit var fragment : ArFragment
     private lateinit var ar: View
 
-    companion object {
-        fun newInstance() = ArFragment()
-    }
+    private lateinit var fragment : ArFragment
+
+    private lateinit var modelUri : Uri
+    private lateinit var testRenderable : ModelRenderable
+
+    lateinit var anchorNode : AnchorNode
+    lateinit var viewNode : TransformableNode
+
+    var directionDouble: Double = 258.1603827811052
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         ar = inflater.inflate(R.layout.ar_fragment, container, false)
 
-        Log.d("AAAAAAAAAAAAAAAAAAA","dsfdsf")
-        //fragment = supportFragmentManager!!.findFragmentById(R.id.sceneform_fragment) as ArFragment
+        fragment = childFragmentManager.findFragmentById(R.id.sceneform_fragment) as ArFragment
+
+        modelUri = Uri.parse("arrow2.sfb")
+
+        val renderableFuture = ModelRenderable.builder().setSource(this.context, modelUri).build()
+        renderableFuture.thenAccept { it -> testRenderable = it }
 
         return ar
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        fragment.setOnTapArPlaneListener(
+                object : BaseArFragment.OnTapArPlaneListener {
+                    override fun onTapPlane(hitResult: HitResult?, plane: Plane?, motionEvent: MotionEvent?) {
 
+                        if (testRenderable == null) {
+                            return@onTapPlane
+                        }
 
+                                val anchor = hitResult!!.createAnchor()
+                                anchorNode = AnchorNode(anchor)
+                                anchorNode.setParent(fragment.arSceneView.scene)
+                                viewNode = TransformableNode(fragment.transformationSystem)
+
+                                viewNode.setParent(anchorNode)
+                                viewNode.renderable = testRenderable
+                                viewNode.select()
+                                MapsViewModel().refreshDegrees(TempData.myLat ,TempData.myLng)
+                                Log.d("Temp LatLng: ", "${TempData.myLat} " + "${TempData.myLng}")
+                                rotateNode(TempData.alkoDegrees)
+                    }
+                }
+        )
     }
 
-    /*
-    override fun onLocationChanged(location: Location?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    private fun rotateNode(rotationDirection: Double) {
+
+        var orbitAnimator = ObjectAnimator()
+        orbitAnimator.target = viewNode
+
+        val orientation1 = Quaternion.axisAngle(Vector3(0.0f, 1.0f, 0.0f), 0.toFloat())
+        val orientation2 = Quaternion.axisAngle(Vector3(0.0f, 1.0f, 0.0f), rotationDirection.toFloat())
+
+        orbitAnimator.duration = 500
+
+        orbitAnimator.setObjectValues(orientation1, orientation2)
+
+        orbitAnimator.propertyName = "localRotation"
+        orbitAnimator.setEvaluator(QuaternionEvaluator())
+        orbitAnimator.interpolator = LinearInterpolator()
+        orbitAnimator.setAutoCancel(true)
+        orbitAnimator.start()
+
     }
-
-    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onProviderEnabled(provider: String?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onProviderDisabled(provider: String?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }*/
-
-
 }
