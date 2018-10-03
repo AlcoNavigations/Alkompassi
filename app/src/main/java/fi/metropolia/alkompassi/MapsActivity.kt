@@ -11,7 +11,6 @@ class MapsActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.maps_activity)
 
-
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                     .replace(R.id.container, MapsFragment.newInstance())
