@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_margin="4dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/alkolist_item_background"
+    tools:layout_editor_absoluteY="25dp">
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView_icon"
+        app:layout_constraintStart_toEndOf="@+id/imageView_icon"
+        app:layout_constraintTop_toTopOf="@+id/imageView_icon">
+
+        <TextView
+            android:id="@+id/textView_alko_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto"
+            android:text="Alko Ruoholahti"
+            android:textColor="#333"
+            android:textSize="16sp"
+            tools:layout_editor_absoluteX="71dp"
+            tools:layout_editor_absoluteY="5dp" />
+
+        <TextView
+            android:id="@+id/textView_alko_distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto"
+            android:text="5.5km"
+            android:textColor="#666"
+            android:textSize="12sp"
+            tools:layout_editor_absoluteX="71dp"
+            tools:layout_editor_absoluteY="26dp" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imageView_icon_background"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@drawable/alkolist_icon_background" />
+
+    <ImageView
+        android:id="@+id/imageView_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_round_local_bar_24px"
+        app:layout_constraintTop_toTopOf="@id/imageView_icon_background"
+        app:layout_constraintBottom_toBottomOf="@id/imageView_icon_background"
+        app:layout_constraintStart_toStartOf="@id/imageView_icon_background"
+        app:layout_constraintEnd_toEndOf="@id/imageView_icon_background" />
+
+    <ImageView
+        android:id="@+id/imageView_fav"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_round_favorite_border_24px" />
+</androidx.constraintlayout.widget.ConstraintLayout>

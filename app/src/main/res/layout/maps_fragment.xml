@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/db1_root"
+    xmlns:tools="http://schemas.android.com/tools"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    tools:context=".MapsActivity">
 
+    <include
+        android:id="@+id/include"
+        layout="@layout/map_screen" />
+    <include layout="@layout/bottomsheet" />
 
-    <Button
-        android:id="@+id/button"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Button" />
+        android:clickable="true"
+        app:layout_anchor="@+id/include"
+        app:layout_anchorGravity="left|top"
+        app:srcCompat="@drawable/alkolist_icon_background" />
 
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/map"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-</LinearLayout>
+

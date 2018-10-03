@@ -9,15 +9,16 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import androidx.lifecycle.MutableLiveData
 import fi.metropolia.alkompassi.data.TempData
+import fi.metropolia.alkompassi.datamodels.Alko
 import io.reactivex.disposables.CompositeDisposable
 
 class MapsViewModel : ViewModel() {
 
-    private var nearAlkos: MutableLiveData<LatLng>? = MutableLiveData()
+    private var nearAlkos: MutableLiveData<Alko>? = MutableLiveData()
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
     private var degrees: Double = 0.0
 
-    fun getNearAlkos(): MutableLiveData<LatLng>? {
+    fun getNearAlkos(): MutableLiveData<Alko>? {
         return nearAlkos
     }
 
@@ -47,12 +48,16 @@ class MapsViewModel : ViewModel() {
                                 { result ->
                                     for (alko in result.results) {
                                         Log.d("Alko found: ", "${alko.geometry.location.lat}" + "${alko.geometry.location.lng}")
-                                        nearAlkos?.value = LatLng(alko.geometry.location.lat,alko.geometry.location.lng)
+
+                                        //nearAlkos?.value = LatLng(alko.geometry.location.lat,alko.geometry.location.lng)
 
                                         TempData.alkoLat = alko.geometry.location.lat
                                         TempData.alkoLng = alko.geometry.location.lng
 
                                         refreshDegrees(location.latitude, location.longitude)
+
+                                        nearAlkos?.value = Alko(alko.name, alko.geometry.location.lat,alko.geometry.location.lng)
+
                                     }
                                 }
                                 ,
@@ -77,6 +82,5 @@ class MapsViewModel : ViewModel() {
 
         return brng
     }
-
 
 }
