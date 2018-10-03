@@ -199,7 +199,6 @@ class MapsFragment : Fragment(), MapHolder {
 
     }
 
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(MapsViewModel::class.java)

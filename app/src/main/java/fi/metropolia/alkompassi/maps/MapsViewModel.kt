@@ -46,13 +46,13 @@ class MapsViewModel : ViewModel() {
                         .subscribe(
                                 { result ->
                                     for (alko in result.results) {
-                                        Log.d("Alko found: ", "${alko.geometry.location.lat} " + "${alko.geometry.location.lng}")
+                                        Log.d("Alko found: ", "${alko.geometry.location.lat} ${alko.geometry.location.lng} ${alko.placeID}")
                                         refreshDegrees(location.latitude, location.longitude)
-                                        nearAlkos?.value = Alko(alko.name, alko.geometry.location.lat,alko.geometry.location.lng)
+                                        nearAlkos?.value = Alko(alko.name, alko.geometry.location.lat,alko.geometry.location.lng, alko.placeID)
                                     }
                                 }
                                 ,
-                                { error -> Log.d("Error: ",error.message) }
+                                { error -> Log.d("getAlkoError: ",error.message) }
                         )
         if (disposable != null) compositeDisposable.add(disposable)
     }
