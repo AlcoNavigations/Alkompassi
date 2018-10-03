@@ -3,7 +3,6 @@ package fi.metropolia.alkompassi.maps
 import android.location.Location
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.google.android.gms.maps.model.LatLng
 import fi.metropolia.alkompassi.remote.IGoogleAPIService
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
