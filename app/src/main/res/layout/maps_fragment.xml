@@ -14,13 +14,22 @@
     <include layout="@layout/bottomsheet" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floatingActionButton"
+        android:id="@+id/arButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"
         app:layout_anchor="@+id/include"
         app:layout_anchorGravity="left|top"
         app:srcCompat="@drawable/alkolist_icon_background" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/testButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:layout_anchor="@+id/include"
+        app:layout_anchorGravity="top|center"
+        app:srcCompat="@drawable/alkolist_item_background" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

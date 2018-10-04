@@ -2,6 +2,7 @@ package fi.metropolia.alkompassi.maps
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.Animatable2.AnimationCallback
@@ -37,6 +38,7 @@ import kotlinx.android.synthetic.main.maps_fragment.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
 import fi.metropolia.alkompassi.datamodels.Alko
+import fi.metropolia.alkompassi.stepcounter.StepCounter
 import fi.metropolia.alkompassi.utils.MapHolder
 
 class MapsFragment : Fragment(), LocationListener, MapHolder {
@@ -160,9 +162,14 @@ class MapsFragment : Fragment(), LocationListener, MapHolder {
             }
 
 
-            floatingActionButton.setOnClickListener {
+            arButton.setOnClickListener {
                 findNavController().navigate(R.id.action_ar)
 
+            }
+
+            testButton.setOnClickListener {
+                val stepIntent = Intent(this.context, StepCounter::class.java)
+                startActivity(stepIntent)
             }
         }
 
