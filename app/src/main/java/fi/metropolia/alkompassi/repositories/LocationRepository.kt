@@ -2,6 +2,10 @@ package fi.metropolia.alkompassi.repositories
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -12,12 +16,19 @@ import androidx.lifecycle.MutableLiveData
 import fi.metropolia.alkompassi.data.TempData
 import fi.metropolia.alkompassi.utils.SingletonHolder
 
-class LocationRepository private constructor(activity: FragmentActivity?) : LocationListener {
+class LocationRepository private constructor(activity: FragmentActivity?) : LocationListener, SensorEventListener {
 
     var lm: LocationManager = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
+    private var sensorManager = activity?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+    private var accelerometer: Sensor? = null
+    private var magnetometer: Sensor? = null
+    private var rotationVector: Sensor? = null
+
     init {
         requestLocationUpdates()
+        requestAzimuthUpdates()
     }
 
     companion object : SingletonHolder<LocationRepository, FragmentActivity>(::LocationRepository)
@@ -32,6 +43,17 @@ class LocationRepository private constructor(activity: FragmentActivity?) : Loca
     private fun requestLocationUpdates() {
         lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
         lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, this)
+    }
+
+    private fun requestAzimuthUpdates() {
+        Log.d("WAAAAAAAAAAAAAAA: " , "WAAAAAAAAAA")
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+        rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+
+        sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_UI)
+        sensorManager.registerListener(this,magnetometer,SensorManager.SENSOR_DELAY_UI)
+        sensorManager.registerListener(this,rotationVector,SensorManager.SENSOR_DELAY_UI)
     }
 
     override fun onLocationChanged(p0: Location?) {
@@ -50,5 +72,39 @@ class LocationRepository private constructor(activity: FragmentActivity?) : Loca
     override fun onProviderDisabled(p0: String?) {
     }
 
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+    }
 
+    private var rotationMatrix = FloatArray(9)
+
+    private var orientation = FloatArray(3)
+
+    private var azimuth: Int = 0
+
+    private var lastAccelerometer = FloatArray(3)
+
+    private var lastAccelerometerSet = false
+
+    private var lastMagnetometer = FloatArray(3)
+
+    private var lastMagnetometerSet = false
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event!!.sensor.type == Sensor.TYPE_ROTATION_VECTOR){
+            SensorManager.getRotationMatrixFromVector(rotationMatrix,event.values)
+            azimuth = (Math.toDegrees(SensorManager.getOrientation(rotationMatrix,orientation)[0].toDouble())+360).toInt()%360
+        }else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD){
+            System.arraycopy(event.values,0, lastMagnetometer, 0, event.values.size)
+            lastMagnetometerSet = true
+        }
+
+        if(lastAccelerometerSet &&  lastMagnetometerSet){
+            SensorManager.getRotationMatrix(rotationMatrix, null, lastAccelerometer, lastMagnetometer)
+            SensorManager.getOrientation(rotationMatrix,orientation)
+            azimuth = (Math.toDegrees(SensorManager.getOrientation(rotationMatrix,orientation)[0].toDouble())+360).toInt()%360
+        }
+        azimuth = Math.round(azimuth.toFloat())
+        TempData.rotationDegrees = azimuth
+        Log.d("RotDeg: " , "${TempData.rotationDegrees}")
+    }
 }

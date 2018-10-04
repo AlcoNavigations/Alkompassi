@@ -28,7 +28,7 @@ class MapsViewModel : ViewModel() {
     fun beginSearch(location: Location) {
 
         val searchablePlace = "alko"
-        val radius = "500"
+        val radius = "5000"
         val apiKey = "AIzaSyDr5EFKYZWL2E33Bvi46bPEEg0pOqS0rq4"
 
 
@@ -46,17 +46,9 @@ class MapsViewModel : ViewModel() {
                         .subscribe(
                                 { result ->
                                     for (alko in result.results) {
-                                        Log.d("Alko found: ", "${alko.geometry.location.lat}" + "${alko.geometry.location.lng}")
-
-                                        //nearAlkos?.value = LatLng(alko.geometry.location.lat,alko.geometry.location.lng)
-
-                                        TempData.alkoLat = alko.geometry.location.lat
-                                        TempData.alkoLng = alko.geometry.location.lng
-
+                                        Log.d("Alko found: ", "${alko.geometry.location.lat} " + "${alko.geometry.location.lng}")
                                         refreshDegrees(location.latitude, location.longitude)
-
                                         nearAlkos?.value = Alko(alko.name, alko.geometry.location.lat,alko.geometry.location.lng)
-
                                     }
                                 }
                                 ,
@@ -78,6 +70,7 @@ class MapsViewModel : ViewModel() {
         val x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon)
         var brng = Math.toDegrees((Math.atan2(y, x)))
         brng = (360 - ((brng + 360) % 360))
+        Log.d("Bearing: ", "$brng")
 
         return brng
     }

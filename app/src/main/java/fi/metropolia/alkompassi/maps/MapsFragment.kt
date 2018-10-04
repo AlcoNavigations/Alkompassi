@@ -28,6 +28,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.data.TempData
@@ -63,7 +64,6 @@ class MapsFragment : Fragment(), MapHolder {
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
     private lateinit var bottomSheetHeader: View
-
 
     private var location: Location? = null
     private var locationLoaded: Boolean = false
@@ -175,6 +175,17 @@ class MapsFragment : Fragment(), MapHolder {
                 findNavController().navigate(R.id.action_ar)
 
             }
+
+
+
+            mMap!!.setOnMarkerClickListener(object : GoogleMap.OnMarkerClickListener {
+                override fun onMarkerClick(marker: Marker): Boolean {
+                    TempData.alkoLat = marker.position.latitude
+                    TempData.alkoLng = marker.position.longitude
+
+                    return false
+                }
+            })
         }
 
         val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)

@@ -36,8 +36,6 @@ class ArFragment : Fragment(){
     lateinit var anchorNode : AnchorNode
     lateinit var viewNode : TransformableNode
 
-    var directionDouble: Double = 258.1603827811052
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         ar = inflater.inflate(R.layout.ar_fragment, container, false)
 
@@ -69,8 +67,7 @@ class ArFragment : Fragment(){
                                 viewNode.renderable = testRenderable
                                 viewNode.select()
                                 MapsViewModel().refreshDegrees(TempData.myLat ,TempData.myLng)
-                                Log.d("Temp LatLng: ", "${TempData.myLat} " + "${TempData.myLng}")
-                                rotateNode(TempData.alkoDegrees)
+                                rotateNode(TempData.rotationDegrees - TempData.alkoDegrees + 180)
                     }
                 }
         )

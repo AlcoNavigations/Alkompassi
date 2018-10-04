@@ -14,6 +14,8 @@
     <uses-feature android:name="android.hardware.location.network" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera.ar" android:required="true" />
+    <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="true" />
+    <uses-feature android:name="android.hardware.sensor.compass" android:required="true" />
 
     <application
         android:allowBackup="true"
