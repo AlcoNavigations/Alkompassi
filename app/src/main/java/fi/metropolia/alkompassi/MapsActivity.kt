@@ -17,10 +17,13 @@ class MapsActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.maps_activity)
 
+
         val navController = Navigation.findNavController(this.my_nav_host_fragment.view!!)
         navController.navigate(R.id.mapsFragment)
 
         /*
+
+
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                     .replace(R.id.container, MapsFragment.newInstance())
