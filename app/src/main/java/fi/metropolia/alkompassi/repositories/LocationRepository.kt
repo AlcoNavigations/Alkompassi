@@ -105,6 +105,5 @@ class LocationRepository private constructor(activity: FragmentActivity?) : Loca
         }
         azimuth = Math.round(azimuth.toFloat())
         TempData.rotationDegrees = azimuth
-        Log.d("RotDeg: " , "${TempData.rotationDegrees}")
     }
 }
