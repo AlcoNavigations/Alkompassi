@@ -46,7 +46,6 @@ class LocationRepository private constructor(activity: FragmentActivity?) : Loca
     }
 
     private fun requestAzimuthUpdates() {
-        Log.d("WAAAAAAAAAAAAAAA: " , "WAAAAAAAAAA")
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
         rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
