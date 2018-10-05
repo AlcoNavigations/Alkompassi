@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.ConnectionResult
@@ -27,9 +28,12 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import fi.metropolia.alkompassi.R
+import fi.metropolia.alkompassi.data.TempData
+import kotlinx.android.synthetic.main.maps_fragment.*
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
 import fi.metropolia.alkompassi.datamodels.Alko
 import fi.metropolia.alkompassi.repositories.LocationRepository
@@ -75,6 +79,7 @@ class MapsFragment : Fragment(), MapHolder {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         v = inflater.inflate(R.layout.maps_fragment, container, false)
+
         return v
     }
 
@@ -164,6 +169,23 @@ class MapsFragment : Fragment(), MapHolder {
             mMap?.setOnMyLocationClickListener {
                 Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
             }
+
+
+            floatingActionButton.setOnClickListener {
+                findNavController().navigate(R.id.action_ar)
+
+            }
+
+
+
+            mMap!!.setOnMarkerClickListener(object : GoogleMap.OnMarkerClickListener {
+                override fun onMarkerClick(marker: Marker): Boolean {
+                    TempData.alkoLat = marker.position.latitude
+                    TempData.alkoLng = marker.position.longitude
+
+                    return false
+                }
+            })
         }
 
         val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
@@ -187,6 +209,7 @@ class MapsFragment : Fragment(), MapHolder {
         super.onResume()
         mapView.onResume()
     }
+
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
