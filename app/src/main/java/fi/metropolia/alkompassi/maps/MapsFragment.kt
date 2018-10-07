@@ -2,12 +2,15 @@ package fi.metropolia.alkompassi.maps
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
+import android.content.Context.SENSOR_SERVICE
 import android.content.pm.PackageManager
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.Animatable2.AnimationCallback
 import android.graphics.drawable.Drawable
+import android.hardware.SensorManager
 import android.location.Location
-import android.os.Bundle
+import android.os.*
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -29,17 +32,17 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.squareup.seismic.ShakeDetector
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
+import fi.metropolia.alkompassi.data.ApplicationDatabase
+import fi.metropolia.alkompassi.data.entities.FavoriteAlko
 import fi.metropolia.alkompassi.datamodels.Alko
 import fi.metropolia.alkompassi.repositories.LocationRepository
+import fi.metropolia.alkompassi.util.DatabaseManager
 import fi.metropolia.alkompassi.utils.MapHolder
 
-class MapsFragment : Fragment(), MapHolder {
-    override fun getLocation(): Location? {
-        return location
-    }
-
+class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
     private val dialogRequest = 9001
 
     companion object {
@@ -60,11 +63,33 @@ class MapsFragment : Fragment(), MapHolder {
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
     private lateinit var bottomSheetHeader: View
+    private lateinit var favoriteList: List<FavoriteAlko>
+    private lateinit var sensorManager: SensorManager
+    private lateinit var shakeDetector: ShakeDetector
+    private lateinit var vibrator: Vibrator
+    private lateinit var dbManager: DatabaseManager
 
     private var location: Location? = null
     private var locationLoaded: Boolean = false
     private var alkos: MutableList<Alko> = mutableListOf()
     private var mMap: GoogleMap? = null
+
+    override fun hearShake() {
+        Toast.makeText(context, "Refreshing", Toast.LENGTH_SHORT).show()
+        if (location != null) {
+            viewModel.beginSearch(location!!)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(500,VibrationEffect.DEFAULT_AMPLITUDE))
+        }else{
+            //deprecated in API 26
+            vibrator.vibrate(500)
+        }
+    }
+
+    override fun getLocation(): Location? {
+        return location
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,6 +106,12 @@ class MapsFragment : Fragment(), MapHolder {
     @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        dbManager = DatabaseManager(context)
+        favoriteList = dbManager.doAsyncGetFavorites()
+        sensorManager = activity?.getSystemService(SENSOR_SERVICE) as SensorManager
+        shakeDetector = ShakeDetector(this)
+        shakeDetector.start(sensorManager)
         expandImageView = v.findViewById(R.id.imageView_expand_animatable)
         collapseImageView = v.findViewById(R.id.imageView_collapse_animatable)
         expandAnimatable = expandImageView.drawable as Animatable2
@@ -89,9 +120,9 @@ class MapsFragment : Fragment(), MapHolder {
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
         bottomSheetHeader = v.findViewById(R.id.bottom_sheet_header)
         viewManager = LinearLayoutManager(context)
-        viewAdapter = AlkoListAdapter(alkos, this)
-
+        viewAdapter = AlkoListAdapter(alkos, this, context, favoriteList)
         locationRepository = LocationRepository.getInstance(activity!!)
+        vibrator = activity?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         recyclerView = v.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
             setHasFixedSize(false)
@@ -129,7 +160,6 @@ class MapsFragment : Fragment(), MapHolder {
             location = it
             if (!locationLoaded && location != null) {
                 locationLoaded = true
-                viewModel.beginSearch(location!!)
             }
         })
 
@@ -150,9 +180,13 @@ class MapsFragment : Fragment(), MapHolder {
             }
 
             // Listen for the Alko locations
-            viewModel.getNearAlkos()?.observe(this, Observer<Alko> {
-                mMap?.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
-                alkos.add(it)
+            viewModel.getNearAlkos()?.observe(this, Observer<List<Alko>> {
+                alkos.clear()
+                mMap?.clear()
+                for (alko in it) {
+                        mMap?.addMarker(MarkerOptions().position(LatLng(alko.lat, alko.lng)))
+                        alkos.add(alko)
+                }
                 viewAdapter.notifyDataSetChanged()
             })
 

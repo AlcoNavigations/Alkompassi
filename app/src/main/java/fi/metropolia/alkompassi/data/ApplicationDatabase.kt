@@ -5,9 +5,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import fi.metropolia.alkompassi.data.Dataobjects.FavoriteLocationDao
-import fi.metropolia.alkompassi.data.entities.FavoriteLocation
+import fi.metropolia.alkompassi.data.entities.FavoriteAlko
 
-@Database(entities = [FavoriteLocation::class], version = 1)
+@Database(entities = [FavoriteAlko::class], version = 1)
 abstract class ApplicationDatabase : RoomDatabase() {
     abstract fun favoriteLocationDao(): FavoriteLocationDao
 
