@@ -13,11 +13,11 @@ import io.reactivex.disposables.CompositeDisposable
 
 class MapsViewModel : ViewModel() {
 
-    private var nearAlkos: MutableLiveData<Alko>? = MutableLiveData()
+    private var nearAlkos: MutableLiveData<List<Alko>>? = MutableLiveData()
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
     private var degrees: Double = 0.0
 
-    fun getNearAlkos(): MutableLiveData<Alko>? {
+    fun getNearAlkos(): MutableLiveData<List<Alko>>? {
         return nearAlkos
     }
 
@@ -45,11 +45,13 @@ class MapsViewModel : ViewModel() {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 { result ->
+                                    val alkolist = mutableListOf<Alko>()
                                     for (alko in result.results) {
                                         Log.d("Alko found: ", "${alko.geometry.location.lat} ${alko.geometry.location.lng} ${alko.placeID}")
                                         refreshDegrees(location.latitude, location.longitude)
-                                        nearAlkos?.value = Alko(alko.name, alko.geometry.location.lat,alko.geometry.location.lng, alko.placeID)
+                                        alkolist.add(Alko(alko.name, alko.geometry.location.lat,alko.geometry.location.lng, alko.placeID))
                                     }
+                                    nearAlkos?.value = alkolist
                                 }
                                 ,
                                 { error -> Log.d("getAlkoError: ",error.message) }
