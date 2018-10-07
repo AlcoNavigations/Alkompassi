@@ -61,12 +61,11 @@ class MapsViewModel : ViewModel() {
         TempData.alkoDegrees = degrees
     }
 
-    fun getDegreesToAlko(lat1: Double, lon1: Double, lat2: Double, lon2: Double) : Double{
-        //1 = start location. 2 = end location
+    fun getDegreesToAlko(startLat: Double, startLon: Double, destinationLat: Double, destinationLon: Double) : Double{
 
-        val dLon = (lon2-lon1)
-        val y = Math.sin(dLon) * Math.cos(lat2)
-        val x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon)
+        val dLon = (destinationLon-startLon)
+        val y = Math.sin(dLon) * Math.cos(destinationLat)
+        val x = Math.cos(startLat) * Math.sin(destinationLat) - Math.sin(startLat) * Math.cos(destinationLat) * Math.cos(dLon)
         var brng = Math.toDegrees((Math.atan2(y, x)))
         brng = (360 - ((brng + 360) % 360))
         Log.d("Bearing: ", "$brng")
