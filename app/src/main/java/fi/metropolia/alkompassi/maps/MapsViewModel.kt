@@ -31,16 +31,13 @@ class MapsViewModel : ViewModel() {
         val radius = "5000"
         val apiKey = "AIzaSyDr5EFKYZWL2E33Bvi46bPEEg0pOqS0rq4"
 
-
-        //Linter warnings are here because this IDE won't show parameter names if the parameter values aren't given in a string format
-        //Do not "fix" these!
         val disposable =
                 wikiApiServe.getAlkoAddresses(
-                        "${location.latitude},${location.longitude}",
-                        "$radius",
-                        "alkoholi",
-                        "$searchablePlace",
-                        "$apiKey")
+                        location = "${location.latitude},${location.longitude}",
+                        radius = radius,
+                        type = "alkoholi",
+                        keyword = searchablePlace,
+                        key = apiKey)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
