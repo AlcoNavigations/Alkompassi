@@ -1,4 +1,4 @@
-package fi.metropolia.alkompassi.maps
+package fi.metropolia.alkompassi.ui.maps
 
 import android.location.Location
 import android.util.Log

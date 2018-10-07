@@ -1,4 +1,4 @@
-package fi.metropolia.alkompassi.maps
+package fi.metropolia.alkompassi.ui.maps
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -209,7 +209,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
 
             floatingActionButton.setOnClickListener {
                 findNavController().navigate(R.id.action_ar)
-
             }
 
 

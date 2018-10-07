@@ -1,10 +1,8 @@
 package fi.metropolia.alkompassi.ar
 
 import android.animation.ObjectAnimator
-import android.location.Location
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import com.google.ar.sceneform.ux.ArFragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -22,7 +20,7 @@ import com.google.ar.sceneform.ux.BaseArFragment
 import com.google.ar.sceneform.ux.TransformableNode
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.data.TempData
-import fi.metropolia.alkompassi.maps.MapsViewModel
+import fi.metropolia.alkompassi.ui.maps.MapsViewModel
 
 class ArFragment : Fragment(){
 

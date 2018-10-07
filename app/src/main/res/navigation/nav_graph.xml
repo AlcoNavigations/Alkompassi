@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/mapsFragment"
-        android:name="fi.metropolia.alkompassi.maps.MapsFragment"
+        android:name="fi.metropolia.alkompassi.ui.maps.MapsFragment"
         android:label="fragment_map"
         tools:layout="@layout/maps_fragment" >
         <action
