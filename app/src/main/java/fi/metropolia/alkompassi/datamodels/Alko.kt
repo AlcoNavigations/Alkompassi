@@ -1,9 +1,10 @@
 package fi.metropolia.alkompassi.datamodels
 
 data class Alko(
-        var name : String,
-        var lat : Double,
-        var lng : Double
+        val name : String,
+        val lat : Double,
+        val lng : Double,
+        val placeID : String
 )
 
 

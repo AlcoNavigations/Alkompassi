@@ -13,11 +13,11 @@ import io.reactivex.disposables.CompositeDisposable
 
 class MapsViewModel : ViewModel() {
 
-    private var nearAlkos: MutableLiveData<Alko>? = MutableLiveData()
+    private var nearAlkos: MutableLiveData<List<Alko>>? = MutableLiveData()
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
     private var degrees: Double = 0.0
 
-    fun getNearAlkos(): MutableLiveData<Alko>? {
+    fun getNearAlkos(): MutableLiveData<List<Alko>>? {
         return nearAlkos
     }
 
@@ -31,28 +31,27 @@ class MapsViewModel : ViewModel() {
         val radius = "5000"
         val apiKey = "AIzaSyDr5EFKYZWL2E33Bvi46bPEEg0pOqS0rq4"
 
-
-        //Linter warnings are here because this IDE won't show parameter names if the parameter values aren't given in a string format
-        //Do not "fix" these!
         val disposable =
                 wikiApiServe.getAlkoAddresses(
-                        "${location.latitude},${location.longitude}",
-                        "$radius",
-                        "alkoholi",
-                        "$searchablePlace",
-                        "$apiKey")
+                        location = "${location.latitude},${location.longitude}",
+                        radius = radius,
+                        type = "alkoholi",
+                        keyword = searchablePlace,
+                        key = apiKey)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 { result ->
+                                    val alkolist = mutableListOf<Alko>()
                                     for (alko in result.results) {
-                                        Log.d("Alko found: ", "${alko.geometry.location.lat} " + "${alko.geometry.location.lng}")
+                                        Log.d("Alko found: ", "${alko.geometry.location.lat} ${alko.geometry.location.lng} ${alko.placeID}")
                                         refreshDegrees(location.latitude, location.longitude)
-                                        nearAlkos?.value = Alko(alko.name, alko.geometry.location.lat,alko.geometry.location.lng)
+                                        alkolist.add(Alko(alko.name, alko.geometry.location.lat,alko.geometry.location.lng, alko.placeID))
                                     }
+                                    nearAlkos?.value = alkolist
                                 }
                                 ,
-                                { error -> Log.d("Error: ",error.message) }
+                                { error -> Log.d("getAlkoError: ",error.message) }
                         )
         if (disposable != null) compositeDisposable.add(disposable)
     }
