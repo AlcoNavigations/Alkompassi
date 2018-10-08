@@ -25,7 +25,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.ConnectionResult
@@ -37,10 +36,12 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.squareup.seismic.ShakeDetector
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.data.TempData
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
+import fi.metropolia.alkompassi.ar.ArFragment
 import fi.metropolia.alkompassi.data.entities.FavoriteAlko
 import fi.metropolia.alkompassi.datamodels.Alko
 import fi.metropolia.alkompassi.repositories.LocationRepository
@@ -211,10 +212,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
             }
 
-
-            activity?.floatingActionButton?.setOnClickListener {
-                findNavController().navigate(R.id.action_ar)
-            }
 
 
 

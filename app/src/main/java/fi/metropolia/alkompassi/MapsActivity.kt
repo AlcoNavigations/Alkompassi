@@ -3,6 +3,8 @@ package fi.metropolia.alkompassi
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
+
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -10,8 +12,10 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
+import fi.metropolia.alkompassi.ar.ArFragment
 import fi.metropolia.alkompassi.ui.favorite.FavoriteFragment
 import fi.metropolia.alkompassi.ui.maps.MapsFragment
+import kotlinx.android.synthetic.main.maps_activity.*
 
 
 class MapsActivity : AppCompatActivity(){
@@ -21,6 +25,7 @@ class MapsActivity : AppCompatActivity(){
     private lateinit var tabLayout: TabLayout
     private lateinit var nearbyFragment: MapsFragment
     private lateinit var favoriteFragment: FavoriteFragment
+    private lateinit var arFragment: ArFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +45,11 @@ class MapsActivity : AppCompatActivity(){
         tabLayout = findViewById(R.id.tabs)
         tabLayout.setupWithViewPager(mViewPager)
 
+        floatingActionButton.setOnClickListener {
+            val fragManager = supportFragmentManager
+            fragManager.beginTransaction().replace(R.id.container, ArFragment()).commitNow()
+        }
+
     }
 
     class MapsFragmentPagerAdapter(fragmentManager: FragmentManager?, val fragments: Map<String, Fragment>) : FragmentPagerAdapter(fragmentManager) {
@@ -58,6 +68,7 @@ class MapsActivity : AppCompatActivity(){
                 else -> null
             }
         }
+
 
         override fun getCount(): Int  = 2
 
