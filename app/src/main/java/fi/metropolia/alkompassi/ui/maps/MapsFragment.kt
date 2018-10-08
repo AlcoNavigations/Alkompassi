@@ -1,4 +1,4 @@
-package fi.metropolia.alkompassi.maps
+package fi.metropolia.alkompassi.ui.maps
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -36,10 +36,10 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.squareup.seismic.ShakeDetector
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.data.TempData
-import kotlinx.android.synthetic.main.maps_fragment.*
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
 import fi.metropolia.alkompassi.ar.ArFragment
 import fi.metropolia.alkompassi.data.entities.FavoriteAlko
@@ -47,6 +47,7 @@ import fi.metropolia.alkompassi.datamodels.Alko
 import fi.metropolia.alkompassi.repositories.LocationRepository
 import fi.metropolia.alkompassi.util.DatabaseManager
 import fi.metropolia.alkompassi.utils.MapHolder
+import kotlinx.android.synthetic.main.maps_activity.*
 
 class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
     private val dialogRequest = 9001
@@ -119,19 +120,24 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         sensorManager = activity?.getSystemService(SENSOR_SERVICE) as SensorManager
         shakeDetector = ShakeDetector(this)
         shakeDetector.start(sensorManager)
-        expandImageView = v.findViewById(R.id.imageView_expand_animatable)
-        collapseImageView = v.findViewById(R.id.imageView_collapse_animatable)
+        expandImageView = activity!!.findViewById(R.id.imageView_expand_animatable)
+        collapseImageView = activity!!.findViewById(R.id.imageView_collapse_animatable)
         expandAnimatable = expandImageView.drawable as Animatable2
         collapseAnimatable = collapseImageView.drawable as Animatable2
-        bottomSheet = v.findViewById(R.id.bottom_sheet)
+        bottomSheet = activity!!.findViewById(R.id.bottom_sheet)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-        bottomSheetHeader = v.findViewById(R.id.bottom_sheet_header)
+        bottomSheetHeader = activity!!.findViewById(R.id.bottom_sheet_header)
         viewManager = LinearLayoutManager(context)
         viewAdapter = AlkoListAdapter(alkos, this, context, favoriteList)
+
+        if ((ContextCompat.checkSelfPermission(context!!, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            ActivityCompat.requestPermissions(activity!!, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
+        }
+
         locationRepository = LocationRepository.getInstance(activity!!)
         vibrator = activity?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
-        recyclerView = v.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
+        recyclerView = activity!!.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
             setHasFixedSize(false)
             layoutManager = viewManager
             adapter = viewAdapter
@@ -170,7 +176,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             }
         })
 
-        mapView = v.findViewById(R.id.map)
+        mapView = activity!!.findViewById(R.id.map)
         mapView.onCreate(savedInstanceState)
 
         mapView.getMapAsync { googleMap ->
@@ -206,12 +212,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
             }
 
-
-            floatingActionButton.setOnClickListener {
-                val fragManager = activity!!.supportFragmentManager
-                fragManager.beginTransaction().replace(R.id.container, ArFragment()).commitNow()
-
-            }
 
 
 
