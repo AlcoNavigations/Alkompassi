@@ -1,34 +1,66 @@
 package fi.metropolia.alkompassi
 
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.navigation.Navigation
-import androidx.navigation.fragment.NavHostFragment.findNavController
-import fi.metropolia.alkompassi.R.id.my_nav_host_fragment
-import fi.metropolia.alkompassi.maps.MapsFragment
-import kotlinx.android.synthetic.main.maps_activity.*
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentPagerAdapter
+import androidx.viewpager.widget.ViewPager
+import com.google.android.material.tabs.TabLayout
+import fi.metropolia.alkompassi.ui.favorite.FavoriteFragment
+import fi.metropolia.alkompassi.ui.maps.MapsFragment
 
 
 class MapsActivity : AppCompatActivity(){
 
-
+    private lateinit var fragmentPagerAdapter: FragmentPagerAdapter
+    private lateinit var mViewPager: ViewPager
+    private lateinit var tabLayout: TabLayout
+    private lateinit var nearbyFragment: MapsFragment
+    private lateinit var favoriteFragment: FavoriteFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.maps_activity)
+        nearbyFragment = MapsFragment.newInstance()
+        favoriteFragment = FavoriteFragment.newInstance()
 
+        if ((ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
+        }
 
-        val navController = Navigation.findNavController(this.my_nav_host_fragment.view!!)
-        navController.navigate(R.id.mapsFragment)
+        fragmentPagerAdapter = MapsFragmentPagerAdapter(
+                supportFragmentManager,
+                mapOf("nearby" to nearbyFragment, "favorite" to favoriteFragment))
+        mViewPager = findViewById(R.id.pager)
+        mViewPager.adapter = fragmentPagerAdapter
+        tabLayout = findViewById(R.id.tabs)
+        tabLayout.setupWithViewPager(mViewPager)
 
-        /*
+    }
 
+    class MapsFragmentPagerAdapter(fragmentManager: FragmentManager?, val fragments: Map<String, Fragment>) : FragmentPagerAdapter(fragmentManager) {
+        override fun getItem(position: Int): Fragment? {
+            return when(position) {
+                0 -> fragments["nearby"]
+                1 -> fragments["favorite"]
+                else -> null
+            }
+        }
 
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, MapsFragment.newInstance())
-                    .commitNow()
-        }*/
+        override fun getPageTitle(position: Int): CharSequence? {
+            return when(position) {
+                0 -> "Nearby"
+                1 -> "Favorite"
+                else -> null
+            }
+        }
+
+        override fun getCount(): Int  = 2
+
     }
 
 
