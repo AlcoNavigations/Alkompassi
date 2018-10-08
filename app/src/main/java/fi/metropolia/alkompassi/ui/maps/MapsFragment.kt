@@ -148,6 +148,8 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 super.onAnimationEnd(drawable)
                 collapseImageView.visibility = View.VISIBLE
                 expandImageView.visibility = View.GONE
+                activity!!.floatingActionButton?.hide()
+
             }
         })
 
@@ -156,6 +158,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 super.onAnimationEnd(drawable)
                 collapseImageView.visibility = View.GONE
                 expandImageView.visibility = View.VISIBLE
+                activity!!.floatingActionButton?.show()
             }
         })
 
@@ -163,9 +166,11 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                 collapseAnimatable.start()
+
             } else {
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
                 expandAnimatable.start()
+
             }
         }
 
