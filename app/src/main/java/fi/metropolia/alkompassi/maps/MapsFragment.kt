@@ -25,7 +25,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.ConnectionResult
@@ -42,6 +41,7 @@ import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.data.TempData
 import kotlinx.android.synthetic.main.maps_fragment.*
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
+import fi.metropolia.alkompassi.ar.ArFragment
 import fi.metropolia.alkompassi.data.entities.FavoriteAlko
 import fi.metropolia.alkompassi.datamodels.Alko
 import fi.metropolia.alkompassi.repositories.LocationRepository
@@ -208,7 +208,8 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
 
 
             floatingActionButton.setOnClickListener {
-                findNavController().navigate(R.id.action_ar)
+                val fragManager = activity!!.supportFragmentManager
+                fragManager.beginTransaction().replace(R.id.container, ArFragment()).commitNow()
 
             }
 
