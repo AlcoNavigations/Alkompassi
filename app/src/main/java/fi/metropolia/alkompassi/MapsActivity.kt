@@ -1,11 +1,13 @@
 package fi.metropolia.alkompassi
 
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import androidx.navigation.fragment.NavHostFragment
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import fi.metropolia.alkompassi.ui.favorite.FavoriteFragment
@@ -26,6 +28,10 @@ class MapsActivity : AppCompatActivity(){
         nearbyFragment = MapsFragment.newInstance()
         favoriteFragment = FavoriteFragment.newInstance()
 
+        if ((ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
+        }
+
         fragmentPagerAdapter = MapsFragmentPagerAdapter(
                 supportFragmentManager,
                 mapOf("nearby" to nearbyFragment, "favorite" to favoriteFragment))
@@ -33,14 +39,6 @@ class MapsActivity : AppCompatActivity(){
         mViewPager.adapter = fragmentPagerAdapter
         tabLayout = findViewById(R.id.tabs)
         tabLayout.setupWithViewPager(mViewPager)
-
-        val finalHost = NavHostFragment.create(R.navigation.nav_graph)
-        supportFragmentManager.beginTransaction()
-                .replace(R.id.pager, finalHost)
-                .setPrimaryNavigationFragment(finalHost) // this is the equivalent to app:defaultNavHost="true"
-                .commit()
-
-        val navController = NavHostFragment.findNavController(finalHost)
 
     }
 
