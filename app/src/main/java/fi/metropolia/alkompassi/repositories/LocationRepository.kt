@@ -52,7 +52,7 @@ class LocationRepository private constructor(activity: FragmentActivity?) : Loca
         Log.d("GEOLOCATION", "new latitude: ${p0?.latitude} and longitude: ${p0?.longitude} altitude: ${p0?.altitude} ")
         location?.value = p0
         TempData.myLat = p0!!.latitude
-        TempData.myLng = p0!!.longitude
+        TempData.myLng = p0.longitude
     }
 
     override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {

@@ -25,10 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
@@ -175,9 +172,9 @@ class FavoriteFragment: Fragment(), MapHolder {
                 mMap?.clear()
                 favoriteList.clear()
                 for (alko in it) {
-                    mMap?.addMarker(MarkerOptions().position(LatLng(alko.latitude, alko.longitude)))
-                    alkos.add(DatamodelConverters.favoriteAlkoToNetworkAlko(alko))
+                    mMap?.addMarker(MarkerOptions().position(LatLng(alko.latitude, alko.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)))
                     favoriteList.add(alko)
+                    alkos.add(DatamodelConverters.favoriteAlkoToNetworkAlko(alko))
                 }
                 (viewAdapter as AlkoListAdapter).updateFavorites(favoriteList)
                 viewAdapter.notifyDataSetChanged()
