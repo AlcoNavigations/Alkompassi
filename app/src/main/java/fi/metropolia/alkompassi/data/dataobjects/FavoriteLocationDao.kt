@@ -1,4 +1,4 @@
-package fi.metropolia.alkompassi.data.Dataobjects
+package fi.metropolia.alkompassi.data.dataobjects
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -21,7 +21,5 @@ interface FavoriteLocationDao {
 
     @Delete
     fun delete(model: FavoriteAlko)
-
-
 
 }

@@ -18,7 +18,7 @@ import fi.metropolia.alkompassi.utils.SingletonHolder
 
 class LocationRepository private constructor(activity: FragmentActivity?) : LocationListener, SensorEventListener {
 
-    var lm: LocationManager = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    private var lm: LocationManager = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private var currentDegree = 0f
     private var mSensorManager: SensorManager? = activity?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
@@ -42,8 +42,8 @@ class LocationRepository private constructor(activity: FragmentActivity?) : Loca
         lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, this)
     }
 
+    @Suppress("DEPRECATION")
     private fun requestAzimuthUpdates() {
-
         mSensorManager!!.registerListener(this, mSensorManager!!.getDefaultSensor(Sensor.TYPE_ORIENTATION),
                 SensorManager.SENSOR_DELAY_GAME)
     }

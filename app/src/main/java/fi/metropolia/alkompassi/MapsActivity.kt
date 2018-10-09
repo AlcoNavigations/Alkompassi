@@ -1,7 +1,6 @@
 package fi.metropolia.alkompassi
 
 import android.content.pm.PackageManager
-import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
@@ -9,16 +8,14 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import androidx.lifecycle.Observer
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
-import fi.metropolia.alkompassi.repositories.LocationRepository
 import fi.metropolia.alkompassi.ui.favorite.FavoriteFragment
 import fi.metropolia.alkompassi.ui.maps.MapsFragment
 import kotlinx.android.synthetic.main.maps_activity.*
 
 
-class MapsActivity : AppCompatActivity(){
+class MapsActivity : AppCompatActivity() {
 
     private lateinit var fragmentPagerAdapter: FragmentPagerAdapter
     private lateinit var mViewPager: ViewPager
@@ -29,8 +26,8 @@ class MapsActivity : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.maps_activity)
-
         supportActionBar?.hide()
+
         nearbyFragment = MapsFragment.newInstance()
         favoriteFragment = FavoriteFragment.newInstance()
 
@@ -41,27 +38,43 @@ class MapsActivity : AppCompatActivity(){
         fragmentPagerAdapter = MapsFragmentPagerAdapter(
                 supportFragmentManager,
                 mapOf("nearby" to nearbyFragment, "favorite" to favoriteFragment))
+
         mViewPager = findViewById(R.id.pager)
         mViewPager.adapter = fragmentPagerAdapter
         tabLayout = findViewById(R.id.tabs)
         tabLayout.setupWithViewPager(mViewPager)
 
-        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener {
+        // Replace the default tab slide animation with fadeOut/fadeIn
+        pager.setPageTransformer(true) { page, position ->
+            page.translationX = page.width * -position
+            if (position <= -1.0F || position >= 1.0F) {
+                page.alpha = 0.0F
+            } else if (position == 0.0F) {
+                page.alpha = 1.0F
+            } else {
+                // position is between -1.0F & 0.0F OR 0.0F & 1.0F
+                page.alpha = 1.0F - Math.abs(position)
+            }
+        }
+
+        pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {}
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             override fun onPageSelected(position: Int) {
                 when (position) {
-                    1 -> favoriteFragment.updateFavorites()
+                    0 -> nearbyFragment.zoomToLocation()
+                    1 -> {
+                        favoriteFragment.updateFavorites()
+                        favoriteFragment.zoomToLocation()
+                    }
                 }
             }
-
         })
-
     }
 
-    class MapsFragmentPagerAdapter(fragmentManager: FragmentManager?, val fragments: Map<String, Fragment>) : FragmentPagerAdapter(fragmentManager) {
+    class MapsFragmentPagerAdapter(fragmentManager: FragmentManager?, private val fragments: Map<String, Fragment>) : FragmentPagerAdapter(fragmentManager) {
         override fun getItem(position: Int): Fragment? {
-            return when(position) {
+            return when (position) {
                 0 -> fragments["nearby"]
                 1 -> fragments["favorite"]
                 else -> null
@@ -69,13 +82,13 @@ class MapsActivity : AppCompatActivity(){
         }
 
         override fun getPageTitle(position: Int): CharSequence? {
-            return when(position) {
+            return when (position) {
                 0 -> "Nearby"
                 1 -> "Favorite"
                 else -> null
             }
         }
 
-        override fun getCount(): Int  = 2
+        override fun getCount(): Int = 2
     }
 }

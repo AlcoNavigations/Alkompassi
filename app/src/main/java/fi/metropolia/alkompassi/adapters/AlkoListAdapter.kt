@@ -1,5 +1,6 @@
 package fi.metropolia.alkompassi.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -9,14 +10,14 @@ import androidx.recyclerview.widget.RecyclerView
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.data.entities.FavoriteAlko
 import fi.metropolia.alkompassi.datamodels.Alko
-import fi.metropolia.alkompassi.util.DatabaseManager
+import fi.metropolia.alkompassi.utils.DatabaseManager
 import fi.metropolia.alkompassi.utils.LocationUtility
 import fi.metropolia.alkompassi.utils.MapHolder
 import kotlinx.android.synthetic.main.alkolist_item.view.*
 
 class AlkoListAdapter(private var dataset: List<Alko>, private val mapHolder: MapHolder, context: Context?, private var favoriteAlkos: List<FavoriteAlko>) : RecyclerView.Adapter<AlkoListAdapter.AlkoListItemViewHolder>() {
 
-    val mDb = DatabaseManager(context)
+    private val mDb = DatabaseManager(context)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlkoListItemViewHolder {
        val listItem = LayoutInflater.from(parent.context)
@@ -28,11 +29,14 @@ class AlkoListAdapter(private var dataset: List<Alko>, private val mapHolder: Ma
         return dataset.size
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: AlkoListItemViewHolder, position: Int) {
 
        val favorite: Boolean = favoriteAlkos.find { it.placeID == dataset[position].placeID } != null
 
         holder.listItem.textView_alko_name.text = dataset[position].name
+
+        // Lint suppressed: Only numbers and "m" for meters. No need to translate ever.
         holder.listItem.textView_alko_distance.text = "${LocationUtility.distToAlko(dataset[position], mapHolder.getLocation()).toInt()} m"
 
         if (favorite) {
