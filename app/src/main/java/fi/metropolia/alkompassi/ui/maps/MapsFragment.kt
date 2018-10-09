@@ -17,9 +17,11 @@ import android.os.Vibrator
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.NO_ID
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -36,12 +38,10 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.squareup.seismic.ShakeDetector
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.data.TempData
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
-import fi.metropolia.alkompassi.ar.ArFragment
 import fi.metropolia.alkompassi.data.entities.FavoriteAlko
 import fi.metropolia.alkompassi.datamodels.Alko
 import fi.metropolia.alkompassi.repositories.LocationRepository
@@ -102,6 +102,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         super.onCreate(savedInstanceState)
         if ((ContextCompat.checkSelfPermission(context!!, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(activity as Activity, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
+
         }
     }
 
@@ -148,7 +149,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 super.onAnimationEnd(drawable)
                 collapseImageView.visibility = View.VISIBLE
                 expandImageView.visibility = View.GONE
-                activity!!.floatingActionButton?.hide()
 
             }
         })
@@ -158,7 +158,8 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 super.onAnimationEnd(drawable)
                 collapseImageView.visibility = View.GONE
                 expandImageView.visibility = View.VISIBLE
-                activity!!.floatingActionButton?.show()
+
+
             }
         })
 
@@ -217,6 +218,11 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
             }
 
+            mMap?.setOnMapClickListener {
+                activity!!.floatingActionButton!!.hide()
+                activity!!.floatingActionButtonDirections!!.hide()
+            }
+
 
 
 
@@ -224,7 +230,24 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 override fun onMarkerClick(marker: Marker): Boolean {
                     TempData.alkoLat = marker.position.latitude
                     TempData.alkoLng = marker.position.longitude
+                    Log.d("Marker: ", marker.position.latitude.toString() + " " + marker.position.longitude.toString())
+                    Log.d("Temp: ", TempData.alkoLat.toString() + " " + TempData.alkoLng.toString())
 
+
+                    viewModel.getNearAlkos()?.observe(activity!!, Observer<List<Alko>> {
+                        for (alko in it) {
+                            if(alko.lat == marker.position.latitude && alko.lng == marker.position.longitude) {
+                                TempData.alkoName = alko.name
+                                Log.d("Alko name: ", TempData.alkoName)
+                            }
+                        }
+                        viewAdapter.notifyDataSetChanged()
+                    })
+
+
+
+                    activity!!.floatingActionButton!!.show()
+                    activity!!.floatingActionButtonDirections!!.show()
                     return false
                 }
             })
@@ -238,7 +261,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             Log.d("DBG", "FIXABLE ERROR")
             GoogleApiAvailability.getInstance().getErrorDialog(activity, availability, dialogRequest)
         }
-
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

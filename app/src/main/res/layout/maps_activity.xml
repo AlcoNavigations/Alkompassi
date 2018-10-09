@@ -50,27 +50,29 @@
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floatingActionButton"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="15dp"
             android:layout_marginBottom="60dp"
+            android:src="@drawable/ic_camera_alt_black_24dp"
             app:backgroundTint="@color/colorAccent"
-            app:layout_anchor="@id/bottom_sheet"
-            app:layout_anchorGravity="top|right|end"/>
+            app:fabSize="normal"
+            android:layout_gravity="bottom|right" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floatingActionButtonDirections"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="26dp"
-            android:layout_marginBottom="120dp"
+            android:layout_marginEnd="23dp"
+            android:layout_marginBottom="130dp"
+            android:src="@drawable/ic_directions_black_24dp"
             app:backgroundTint="@color/common_google_signin_btn_text_dark_default"
-            app:layout_anchor="@id/floatingActionButton"
-            app:layout_anchorGravity="top|right|end" />
+            app:fabSize="mini"
+            android:layout_gravity="bottom|right" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
