@@ -85,18 +85,21 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
     private var locationLoaded: Boolean = false
     private var alkos: MutableList<Alko> = mutableListOf()
     private var mMap: GoogleMap? = null
+    private var fetchingAlkoLocations = false
 
     override fun hearShake() {
         Toast.makeText(context, "Refreshing", Toast.LENGTH_SHORT).show()
-        if (location != null) {
+        if (location != null && !fetchingAlkoLocations) {
+            fetchingAlkoLocations = true
             viewModel.beginSearch(location!!)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(500,VibrationEffect.DEFAULT_AMPLITUDE))
+            }else{
+                //deprecated in API 26
+                vibrator.vibrate(500)
+            }
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(500,VibrationEffect.DEFAULT_AMPLITUDE))
-        }else{
-            //deprecated in API 26
-            vibrator.vibrate(500)
-        }
+
     }
 
     override fun getLocation(): Location? {
@@ -224,6 +227,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                         alkos.add(alko)
                 }
                 viewAdapter.notifyDataSetChanged()
+                fetchingAlkoLocations = false
             })
 
             mMap?.setOnMyLocationButtonClickListener {

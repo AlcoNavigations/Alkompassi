@@ -46,7 +46,7 @@ class MapsActivity : AppCompatActivity(){
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             override fun onPageSelected(position: Int) {
                 when (position) {
-                    0 -> favoriteFragment.updateFavorites()
+                    1 -> favoriteFragment.updateFavorites()
                 }
             }
 
