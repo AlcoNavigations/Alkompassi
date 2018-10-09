@@ -36,9 +36,7 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.squareup.seismic.ShakeDetector
 import fi.metropolia.alkompassi.R
@@ -110,8 +108,18 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         super.onCreate(savedInstanceState)
         if ((ContextCompat.checkSelfPermission(context!!, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(activity as Activity, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
-
         }
+        locationRepository = LocationRepository.getInstance(activity!!)
+        locationRepository.getLocation()?.observe(this, Observer<Location> {
+            location = it
+            if (!locationLoaded && location != null) {
+                locationLoaded = true
+                viewModel.beginSearch(location!!)
+                val myLoc = LatLng(location!!.latitude, location!!.longitude)
+                mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 9F))
+            }
+        })
+
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -144,7 +152,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             ActivityCompat.requestPermissions(activity!!, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
         }
 
-        locationRepository = LocationRepository.getInstance(activity!!)
+
         vibrator = activity?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         recyclerView = v.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
@@ -167,8 +175,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 super.onAnimationEnd(drawable)
                 collapseImageView.visibility = View.GONE
                 expandImageView.visibility = View.VISIBLE
-
-
             }
         })
 
@@ -196,13 +202,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             startActivity(intent)
         }
 
-        locationRepository.getLocation()?.observe(this, Observer<Location> {
-            location = it
-            if (!locationLoaded && location != null) {
-                locationLoaded = true
-            }
-        })
-
         mapView = v.findViewById(R.id.map)
         mapView.onCreate(savedInstanceState)
 
@@ -210,21 +209,22 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
 
             if (googleMap != null) mMap = googleMap
             mMap?.isMyLocationEnabled = true
-
             mMap?.uiSettings?.isMapToolbarEnabled = false
-
-            if (location != null) {
-                val myLoc = LatLng(location!!.latitude, location!!.longitude)
-                mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 16F))
-                viewModel.beginSearch(location!!)
-            }
+            mMap?.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            context, R.raw.style_json))
 
             // Listen for the Alko locations
             viewModel.getNearAlkos()?.observe(this, Observer<List<Alko>> {
                 alkos.clear()
                 mMap?.clear()
                 for (alko in it) {
+                    if (favoriteList.find { it.placeID == alko.placeID } != null) {
+                        mMap?.addMarker(MarkerOptions().position(LatLng(alko.lat, alko.lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)))
+                    } else {
                         mMap?.addMarker(MarkerOptions().position(LatLng(alko.lat, alko.lng)))
+                    }
+
                         alkos.add(alko)
                 }
                 viewAdapter.notifyDataSetChanged()

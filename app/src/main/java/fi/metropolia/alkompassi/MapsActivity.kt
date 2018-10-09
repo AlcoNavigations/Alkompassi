@@ -1,6 +1,7 @@
 package fi.metropolia.alkompassi
 
 import android.content.pm.PackageManager
+import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
@@ -8,8 +9,10 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.lifecycle.Observer
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
+import fi.metropolia.alkompassi.repositories.LocationRepository
 import fi.metropolia.alkompassi.ui.favorite.FavoriteFragment
 import fi.metropolia.alkompassi.ui.maps.MapsFragment
 import kotlinx.android.synthetic.main.maps_activity.*
@@ -26,6 +29,8 @@ class MapsActivity : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.maps_activity)
+
+        supportActionBar?.hide()
         nearbyFragment = MapsFragment.newInstance()
         favoriteFragment = FavoriteFragment.newInstance()
 

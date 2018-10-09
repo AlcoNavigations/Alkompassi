@@ -42,6 +42,9 @@ class MapsViewModel : ViewModel() {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 { result ->
+                                    if (result.results.isEmpty()) {
+
+                                    }
                                     val alkolist = mutableListOf<Alko>()
                                     for (alko in result.results) {
                                         Log.d("Alko found: ", "${alko.geometry.location.lat} ${alko.geometry.location.lng} ${alko.placeID}")
