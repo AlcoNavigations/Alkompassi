@@ -3,8 +3,6 @@ package fi.metropolia.alkompassi
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
-
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -16,6 +14,9 @@ import fi.metropolia.alkompassi.ar.ArFragment
 import fi.metropolia.alkompassi.ui.favorite.FavoriteFragment
 import fi.metropolia.alkompassi.ui.maps.MapsFragment
 import kotlinx.android.synthetic.main.maps_activity.*
+import android.content.Intent
+import android.net.Uri
+import fi.metropolia.alkompassi.data.TempData
 
 
 class MapsActivity : AppCompatActivity(){
@@ -25,13 +26,14 @@ class MapsActivity : AppCompatActivity(){
     private lateinit var tabLayout: TabLayout
     private lateinit var nearbyFragment: MapsFragment
     private lateinit var favoriteFragment: FavoriteFragment
-    private lateinit var arFragment: ArFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.maps_activity)
         nearbyFragment = MapsFragment.newInstance()
         favoriteFragment = FavoriteFragment.newInstance()
+        floatingActionButton.hide()
+        floatingActionButtonDirections.hide()
 
         if ((ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
@@ -50,6 +52,11 @@ class MapsActivity : AppCompatActivity(){
             fragManager.beginTransaction().replace(R.id.container, ArFragment()).commitNow()
         }
 
+        floatingActionButtonDirections.setOnClickListener{
+            val intent = Intent(android.content.Intent.ACTION_VIEW, Uri.parse(
+                    "http://maps.google.com/maps?saddr=${TempData.myLat},${TempData.myLng}&daddr=${TempData.alkoLat},${TempData.alkoLng}"))
+            startActivity(intent)
+        }
     }
 
     class MapsFragmentPagerAdapter(fragmentManager: FragmentManager?, val fragments: Map<String, Fragment>) : FragmentPagerAdapter(fragmentManager) {
@@ -69,10 +76,6 @@ class MapsActivity : AppCompatActivity(){
             }
         }
 
-
         override fun getCount(): Int  = 2
-
     }
-
-
 }

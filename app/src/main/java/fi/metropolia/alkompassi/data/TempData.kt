@@ -4,6 +4,7 @@ object TempData {
     var alkoLat: Double = 0.0
     var alkoLng: Double = 0.0
     var alkoDegrees: Double = 0.0
+    var alkoName: String = ""
 
     var rotationDegrees: Int = 0
 

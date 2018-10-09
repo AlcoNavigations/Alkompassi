@@ -19,12 +19,9 @@ import fi.metropolia.alkompassi.utils.SingletonHolder
 class LocationRepository private constructor(activity: FragmentActivity?) : LocationListener, SensorEventListener {
 
     var lm: LocationManager = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    private var currentDegree = 0f
+    private var mSensorManager: SensorManager? = activity?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
-    private var sensorManager = activity?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-
-    private var accelerometer: Sensor? = null
-    private var magnetometer: Sensor? = null
-    private var rotationVector: Sensor? = null
 
     init {
         requestLocationUpdates()
@@ -46,13 +43,9 @@ class LocationRepository private constructor(activity: FragmentActivity?) : Loca
     }
 
     private fun requestAzimuthUpdates() {
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
-        rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
-        sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_UI)
-        sensorManager.registerListener(this,magnetometer,SensorManager.SENSOR_DELAY_UI)
-        sensorManager.registerListener(this,rotationVector,SensorManager.SENSOR_DELAY_UI)
+        mSensorManager!!.registerListener(this, mSensorManager!!.getDefaultSensor(Sensor.TYPE_ORIENTATION),
+                SensorManager.SENSOR_DELAY_GAME)
     }
 
     override fun onLocationChanged(p0: Location?) {
@@ -74,35 +67,10 @@ class LocationRepository private constructor(activity: FragmentActivity?) : Loca
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
     }
 
-    private var rotationMatrix = FloatArray(9)
-
-    private var orientation = FloatArray(3)
-
-    private var azimuth: Int = 0
-
-    private var lastAccelerometer = FloatArray(3)
-
-    private var lastAccelerometerSet = false
-
-    private var lastMagnetometer = FloatArray(3)
-
-    private var lastMagnetometerSet = false
-
     override fun onSensorChanged(event: SensorEvent?) {
-        if (event!!.sensor.type == Sensor.TYPE_ROTATION_VECTOR){
-            SensorManager.getRotationMatrixFromVector(rotationMatrix,event.values)
-            azimuth = (Math.toDegrees(SensorManager.getOrientation(rotationMatrix,orientation)[0].toDouble())+360).toInt()%360
-        }else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD){
-            System.arraycopy(event.values,0, lastMagnetometer, 0, event.values.size)
-            lastMagnetometerSet = true
-        }
 
-        if(lastAccelerometerSet &&  lastMagnetometerSet){
-            SensorManager.getRotationMatrix(rotationMatrix, null, lastAccelerometer, lastMagnetometer)
-            SensorManager.getOrientation(rotationMatrix,orientation)
-            azimuth = (Math.toDegrees(SensorManager.getOrientation(rotationMatrix,orientation)[0].toDouble())+360).toInt()%360
-        }
-        azimuth = Math.round(azimuth.toFloat())
-        TempData.rotationDegrees = azimuth
+        val azimuth = Math.round(event!!.values[0]).toFloat()
+        currentDegree = -azimuth
+        TempData.rotationDegrees = azimuth.toInt()
     }
 }

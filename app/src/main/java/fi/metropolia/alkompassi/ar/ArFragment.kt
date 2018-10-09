@@ -65,19 +65,21 @@ class ArFragment : Fragment(){
                                 viewNode.renderable = testRenderable
                                 viewNode.select()
                                 MapsViewModel().refreshDegrees(TempData.myLat ,TempData.myLng)
-                                rotateNode(TempData.rotationDegrees - TempData.alkoDegrees + 180)
+                        val rotationDegrees = TempData.rotationDegrees - 180
+                        val alkoDegrees = rotationDegrees - TempData.alkoDegrees
+                                rotateNode(rotationDegrees.toDouble(), alkoDegrees)
                     }
                 }
         )
     }
 
-    private fun rotateNode(rotationDirection: Double) {
+    private fun rotateNode(rotationDirection: Double, alkoDirection: Double) {
 
         var orbitAnimator = ObjectAnimator()
         orbitAnimator.target = viewNode
 
-        val orientation1 = Quaternion.axisAngle(Vector3(0.0f, 1.0f, 0.0f), 0.toFloat())
-        val orientation2 = Quaternion.axisAngle(Vector3(0.0f, 1.0f, 0.0f), rotationDirection.toFloat())
+        val orientation1 = Quaternion.axisAngle(Vector3(0.0f, 1.0f, 0.0f), rotationDirection.toFloat())
+        val orientation2 = Quaternion.axisAngle(Vector3(0.0f, 1.0f, 0.0f), alkoDirection.toFloat())
 
         orbitAnimator.duration = 500
 
