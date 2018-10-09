@@ -12,6 +12,7 @@ import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import fi.metropolia.alkompassi.ui.favorite.FavoriteFragment
 import fi.metropolia.alkompassi.ui.maps.MapsFragment
+import kotlinx.android.synthetic.main.maps_activity.*
 
 
 class MapsActivity : AppCompatActivity(){
@@ -39,6 +40,17 @@ class MapsActivity : AppCompatActivity(){
         mViewPager.adapter = fragmentPagerAdapter
         tabLayout = findViewById(R.id.tabs)
         tabLayout.setupWithViewPager(mViewPager)
+
+        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener {
+            override fun onPageScrollStateChanged(state: Int) {}
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+            override fun onPageSelected(position: Int) {
+                when (position) {
+                    0 -> favoriteFragment.updateFavorites()
+                }
+            }
+
+        })
 
     }
 
