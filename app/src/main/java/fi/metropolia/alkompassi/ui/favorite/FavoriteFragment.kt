@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
@@ -60,6 +61,7 @@ class FavoriteFragment: Fragment(), MapHolder {
     private lateinit var sensorManager: SensorManager
     private lateinit var dbManager: DatabaseManager
 
+    private var favoriteLiveData: MutableLiveData<List<FavoriteAlko>> = MutableLiveData()
     private var location: Location? = null
     private var locationLoaded: Boolean = false
     private var alkos: MutableList<Alko> = mutableListOf()
@@ -74,7 +76,8 @@ class FavoriteFragment: Fragment(), MapHolder {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         dbManager = DatabaseManager(context)
-        favoriteList = dbManager.doAsyncGetFavorites()
+        favoriteLiveData.value = dbManager.doAsyncGetFavorites()
+        favoriteList = mutableListOf()
         sensorManager = activity?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         expandImageView = v.findViewById(R.id.imageView_expand_animatable)
         collapseImageView = v.findViewById(R.id.imageView_collapse_animatable)
@@ -142,11 +145,16 @@ class FavoriteFragment: Fragment(), MapHolder {
                 mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 16F))
             }
 
-                for (alko in favoriteList) {
+            favoriteLiveData.observe(this, Observer<List<FavoriteAlko>> {
+                alkos.clear()
+                mMap?.clear()
+                for (alko in it) {
                     mMap?.addMarker(MarkerOptions().position(LatLng(alko.latitude, alko.longitude)))
                     alkos.add(DatamodelConverters.favoriteAlkoToNetworkAlko(alko))
                 }
                 viewAdapter.notifyDataSetChanged()
+            })
+
 
             mMap?.setOnMyLocationButtonClickListener {
                 Toast.makeText(context, "MyLocation button clicked", Toast.LENGTH_SHORT).show()
@@ -169,6 +177,10 @@ class FavoriteFragment: Fragment(), MapHolder {
 
     }
 
+    fun updateFavorites() {
+        favoriteLiveData.value = dbManager.doAsyncGetFavorites()
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(FavoriteViewModel::class.java)
@@ -180,7 +192,7 @@ class FavoriteFragment: Fragment(), MapHolder {
     }
 
     override fun getLocation(): Location? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return location
     }
 
 }

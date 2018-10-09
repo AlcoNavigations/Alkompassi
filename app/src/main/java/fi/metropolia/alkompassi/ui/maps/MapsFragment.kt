@@ -4,12 +4,14 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Context.SENSOR_SERVICE
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.Animatable2.AnimationCallback
 import android.graphics.drawable.Drawable
 import android.hardware.SensorManager
 import android.location.Location
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
@@ -42,12 +44,14 @@ import com.squareup.seismic.ShakeDetector
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.data.TempData
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
+import fi.metropolia.alkompassi.ar.ArFragment
 import fi.metropolia.alkompassi.data.entities.FavoriteAlko
 import fi.metropolia.alkompassi.datamodels.Alko
 import fi.metropolia.alkompassi.repositories.LocationRepository
 import fi.metropolia.alkompassi.util.DatabaseManager
 import fi.metropolia.alkompassi.utils.MapHolder
 import kotlinx.android.synthetic.main.maps_activity.*
+import kotlinx.android.synthetic.main.maps_fragment.*
 import kotlinx.android.synthetic.main.maps_fragment.view.*
 
 class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
@@ -130,6 +134,8 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         bottomSheetHeader = v.findViewById(R.id.bottom_sheet_header)
         viewManager = LinearLayoutManager(context)
         viewAdapter = AlkoListAdapter(alkos, this, context, favoriteList)
+        floatingActionButton.hide()
+        floatingActionButtonDirections.hide()
 
         if ((ContextCompat.checkSelfPermission(context!!, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(activity!!, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
@@ -173,6 +179,17 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 expandAnimatable.start()
 
             }
+        }
+
+        floatingActionButton.setOnClickListener {
+            val fragManager = fragmentManager
+            fragManager?.beginTransaction()?.replace(R.id.container, ArFragment())?.commitNow()
+        }
+
+        floatingActionButtonDirections.setOnClickListener{
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(
+                    "http://maps.google.com/maps?saddr=${TempData.myLat},${TempData.myLng}&daddr=${TempData.alkoLat},${TempData.alkoLng}"))
+            startActivity(intent)
         }
 
         locationRepository.getLocation()?.observe(this, Observer<Location> {
@@ -229,7 +246,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                     TempData.alkoLng = marker.position.longitude
                     Log.d("Marker: ", marker.position.latitude.toString() + " " + marker.position.longitude.toString())
                     Log.d("Temp: ", TempData.alkoLat.toString() + " " + TempData.alkoLng.toString())
-                    
+
                     viewModel.getNearAlkos()?.observe(activity!!, Observer<List<Alko>> {
                         for (alko in it) {
                             if(alko.lat == marker.position.latitude && alko.lng == marker.position.longitude) {
