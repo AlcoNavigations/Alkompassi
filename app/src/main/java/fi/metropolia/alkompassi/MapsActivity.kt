@@ -10,13 +10,9 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
-import fi.metropolia.alkompassi.ar.ArFragment
 import fi.metropolia.alkompassi.ui.favorite.FavoriteFragment
 import fi.metropolia.alkompassi.ui.maps.MapsFragment
 import kotlinx.android.synthetic.main.maps_activity.*
-import android.content.Intent
-import android.net.Uri
-import fi.metropolia.alkompassi.data.TempData
 
 
 class MapsActivity : AppCompatActivity(){
@@ -32,8 +28,6 @@ class MapsActivity : AppCompatActivity(){
         setContentView(R.layout.maps_activity)
         nearbyFragment = MapsFragment.newInstance()
         favoriteFragment = FavoriteFragment.newInstance()
-        floatingActionButton.hide()
-        floatingActionButtonDirections.hide()
 
         if ((ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
@@ -47,16 +41,17 @@ class MapsActivity : AppCompatActivity(){
         tabLayout = findViewById(R.id.tabs)
         tabLayout.setupWithViewPager(mViewPager)
 
-        floatingActionButton.setOnClickListener {
-            val fragManager = supportFragmentManager
-            fragManager.beginTransaction().replace(R.id.container, ArFragment()).commitNow()
-        }
+        pager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener {
+            override fun onPageScrollStateChanged(state: Int) {}
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+            override fun onPageSelected(position: Int) {
+                when (position) {
+                    1 -> favoriteFragment.updateFavorites()
+                }
+            }
 
-        floatingActionButtonDirections.setOnClickListener{
-            val intent = Intent(android.content.Intent.ACTION_VIEW, Uri.parse(
-                    "http://maps.google.com/maps?saddr=${TempData.myLat},${TempData.myLng}&daddr=${TempData.alkoLat},${TempData.alkoLng}"))
-            startActivity(intent)
-        }
+        })
+
     }
 
     class MapsFragmentPagerAdapter(fragmentManager: FragmentManager?, val fragments: Map<String, Fragment>) : FragmentPagerAdapter(fragmentManager) {

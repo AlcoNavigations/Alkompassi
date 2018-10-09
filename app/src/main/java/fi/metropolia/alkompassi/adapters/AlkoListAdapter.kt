@@ -30,7 +30,7 @@ class AlkoListAdapter(private var dataset: List<Alko>, private val mapHolder: Ma
 
     override fun onBindViewHolder(holder: AlkoListItemViewHolder, position: Int) {
 
-       val favorite: Boolean = favoriteAlkos.find { it.PlaceID == dataset[position].placeID } != null
+       val favorite: Boolean = favoriteAlkos.find { it.placeID == dataset[position].placeID } != null
 
         holder.listItem.textView_alko_name.text = dataset[position].name
         holder.listItem.textView_alko_distance.text = "${LocationUtility.distToAlko(dataset[position], mapHolder.getLocation()).toInt()} m"
@@ -52,6 +52,10 @@ class AlkoListAdapter(private var dataset: List<Alko>, private val mapHolder: Ma
                 notifyDataSetChanged()
             }
         }
+    }
+
+    fun updateFavorites(newFavorites: MutableList<FavoriteAlko>) {
+        favoriteAlkos = newFavorites
     }
 
     class AlkoListItemViewHolder(val listItem: View) : RecyclerView.ViewHolder(listItem)

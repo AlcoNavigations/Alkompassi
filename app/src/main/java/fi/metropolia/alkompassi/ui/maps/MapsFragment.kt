@@ -4,12 +4,14 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Context.SENSOR_SERVICE
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.Animatable2.AnimationCallback
 import android.graphics.drawable.Drawable
 import android.hardware.SensorManager
 import android.location.Location
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
@@ -42,12 +44,15 @@ import com.squareup.seismic.ShakeDetector
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.data.TempData
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
+import fi.metropolia.alkompassi.ar.ArFragment
 import fi.metropolia.alkompassi.data.entities.FavoriteAlko
 import fi.metropolia.alkompassi.datamodels.Alko
 import fi.metropolia.alkompassi.repositories.LocationRepository
 import fi.metropolia.alkompassi.util.DatabaseManager
 import fi.metropolia.alkompassi.utils.MapHolder
 import kotlinx.android.synthetic.main.maps_activity.*
+import kotlinx.android.synthetic.main.maps_fragment.*
+import kotlinx.android.synthetic.main.maps_fragment.view.*
 
 class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
     private val dialogRequest = 9001
@@ -80,18 +85,21 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
     private var locationLoaded: Boolean = false
     private var alkos: MutableList<Alko> = mutableListOf()
     private var mMap: GoogleMap? = null
+    private var fetchingAlkoLocations = false
 
     override fun hearShake() {
         Toast.makeText(context, "Refreshing", Toast.LENGTH_SHORT).show()
-        if (location != null) {
+        if (location != null && !fetchingAlkoLocations) {
+            fetchingAlkoLocations = true
             viewModel.beginSearch(location!!)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(500,VibrationEffect.DEFAULT_AMPLITUDE))
+            }else{
+                //deprecated in API 26
+                vibrator.vibrate(500)
+            }
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(500,VibrationEffect.DEFAULT_AMPLITUDE))
-        }else{
-            //deprecated in API 26
-            vibrator.vibrate(500)
-        }
+
     }
 
     override fun getLocation(): Location? {
@@ -108,7 +116,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         v = inflater.inflate(R.layout.maps_fragment, container, false)
-
         return v
     }
 
@@ -121,15 +128,17 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         sensorManager = activity?.getSystemService(SENSOR_SERVICE) as SensorManager
         shakeDetector = ShakeDetector(this)
         shakeDetector.start(sensorManager)
-        expandImageView = activity!!.findViewById(R.id.imageView_expand_animatable)
-        collapseImageView = activity!!.findViewById(R.id.imageView_collapse_animatable)
+        expandImageView = v.findViewById(R.id.imageView_expand_animatable)
+        collapseImageView = v.findViewById(R.id.imageView_collapse_animatable)
         expandAnimatable = expandImageView.drawable as Animatable2
         collapseAnimatable = collapseImageView.drawable as Animatable2
-        bottomSheet = activity!!.findViewById(R.id.bottom_sheet)
+        bottomSheet = v.findViewById(R.id.bottom_sheet)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-        bottomSheetHeader = activity!!.findViewById(R.id.bottom_sheet_header)
+        bottomSheetHeader = v.findViewById(R.id.bottom_sheet_header)
         viewManager = LinearLayoutManager(context)
         viewAdapter = AlkoListAdapter(alkos, this, context, favoriteList)
+        floatingActionButton.hide()
+        floatingActionButtonDirections.hide()
 
         if ((ContextCompat.checkSelfPermission(context!!, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(activity!!, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
@@ -138,7 +147,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         locationRepository = LocationRepository.getInstance(activity!!)
         vibrator = activity?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
-        recyclerView = activity!!.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
+        recyclerView = v.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
             setHasFixedSize(false)
             layoutManager = viewManager
             adapter = viewAdapter
@@ -175,6 +184,17 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             }
         }
 
+        floatingActionButton.setOnClickListener {
+            val fragManager = fragmentManager
+            fragManager?.beginTransaction()?.replace(R.id.container, ArFragment())?.commitNow()
+        }
+
+        floatingActionButtonDirections.setOnClickListener{
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(
+                    "http://maps.google.com/maps?saddr=${TempData.myLat},${TempData.myLng}&daddr=${TempData.alkoLat},${TempData.alkoLng}"))
+            startActivity(intent)
+        }
+
         locationRepository.getLocation()?.observe(this, Observer<Location> {
             location = it
             if (!locationLoaded && location != null) {
@@ -182,7 +202,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             }
         })
 
-        mapView = activity!!.findViewById(R.id.map)
+        mapView = v.findViewById(R.id.map)
         mapView.onCreate(savedInstanceState)
 
         mapView.getMapAsync { googleMap ->
@@ -207,6 +227,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                         alkos.add(alko)
                 }
                 viewAdapter.notifyDataSetChanged()
+                fetchingAlkoLocations = false
             })
 
             mMap?.setOnMyLocationButtonClickListener {
@@ -219,18 +240,16 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             }
 
             mMap?.setOnMapClickListener {
-                activity!!.floatingActionButton!!.hide()
-                activity!!.floatingActionButtonDirections!!.hide()
+                v.floatingActionButton!!.hide()
+                v.floatingActionButtonDirections!!.hide()
             }
 
-            
             mMap!!.setOnMarkerClickListener(object : GoogleMap.OnMarkerClickListener {
                 override fun onMarkerClick(marker: Marker): Boolean {
                     TempData.alkoLat = marker.position.latitude
                     TempData.alkoLng = marker.position.longitude
                     Log.d("Marker: ", marker.position.latitude.toString() + " " + marker.position.longitude.toString())
                     Log.d("Temp: ", TempData.alkoLat.toString() + " " + TempData.alkoLng.toString())
-
 
                     viewModel.getNearAlkos()?.observe(activity!!, Observer<List<Alko>> {
                         for (alko in it) {
@@ -242,10 +261,8 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                         viewAdapter.notifyDataSetChanged()
                     })
 
-
-
-                    activity!!.floatingActionButton!!.show()
-                    activity!!.floatingActionButtonDirections!!.show()
+                    v.floatingActionButton!!.show()
+                    v.floatingActionButtonDirections!!.show()
                     return false
                 }
             })
