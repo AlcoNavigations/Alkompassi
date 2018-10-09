@@ -106,7 +106,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         v = inflater.inflate(R.layout.maps_fragment, container, false)
-
         return v
     }
 
@@ -119,13 +118,13 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         sensorManager = activity?.getSystemService(SENSOR_SERVICE) as SensorManager
         shakeDetector = ShakeDetector(this)
         shakeDetector.start(sensorManager)
-        expandImageView = activity!!.findViewById(R.id.imageView_expand_animatable)
-        collapseImageView = activity!!.findViewById(R.id.imageView_collapse_animatable)
+        expandImageView = v.findViewById(R.id.imageView_expand_animatable)
+        collapseImageView = v.findViewById(R.id.imageView_collapse_animatable)
         expandAnimatable = expandImageView.drawable as Animatable2
         collapseAnimatable = collapseImageView.drawable as Animatable2
-        bottomSheet = activity!!.findViewById(R.id.bottom_sheet)
+        bottomSheet = v.findViewById(R.id.bottom_sheet)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-        bottomSheetHeader = activity!!.findViewById(R.id.bottom_sheet_header)
+        bottomSheetHeader = v.findViewById(R.id.bottom_sheet_header)
         viewManager = LinearLayoutManager(context)
         viewAdapter = AlkoListAdapter(alkos, this, context, favoriteList)
 
@@ -136,7 +135,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         locationRepository = LocationRepository.getInstance(activity!!)
         vibrator = activity?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
-        recyclerView = activity!!.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
+        recyclerView = v.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
             setHasFixedSize(false)
             layoutManager = viewManager
             adapter = viewAdapter
@@ -175,7 +174,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             }
         })
 
-        mapView = activity!!.findViewById(R.id.map)
+        mapView = v.findViewById(R.id.map)
         mapView.onCreate(savedInstanceState)
 
         mapView.getMapAsync { googleMap ->
@@ -210,13 +209,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             mMap?.setOnMyLocationClickListener {
                 Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
             }
-
-
-            activity?.floatingActionButton?.setOnClickListener {
-                findNavController().navigate(R.id.action_ar)
-            }
-
-
 
             mMap!!.setOnMarkerClickListener(object : GoogleMap.OnMarkerClickListener {
                 override fun onMarkerClick(marker: Marker): Boolean {
