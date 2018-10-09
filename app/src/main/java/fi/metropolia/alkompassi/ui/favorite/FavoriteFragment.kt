@@ -29,18 +29,18 @@ import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
-import fi.metropolia.alkompassi.ar.ArFragment
+import fi.metropolia.alkompassi.ui.ar.ArFragment
 import fi.metropolia.alkompassi.data.TempData
 import fi.metropolia.alkompassi.data.entities.FavoriteAlko
 import fi.metropolia.alkompassi.datamodels.Alko
 import fi.metropolia.alkompassi.repositories.LocationRepository
-import fi.metropolia.alkompassi.util.DatabaseManager
+import fi.metropolia.alkompassi.utils.DatabaseManager
 import fi.metropolia.alkompassi.utils.DatamodelConverters
 import fi.metropolia.alkompassi.utils.MapHolder
 import kotlinx.android.synthetic.main.maps_fragment.*
 import kotlinx.android.synthetic.main.maps_fragment.view.*
 
-class FavoriteFragment: Fragment(), MapHolder {
+class FavoriteFragment : Fragment(), MapHolder {
 
     private lateinit var viewModel: ViewModel
     private lateinit var v: View
@@ -72,11 +72,17 @@ class FavoriteFragment: Fragment(), MapHolder {
     private var mMap: GoogleMap? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        locationRepository = LocationRepository.getInstance(activity!!)
+        locationRepository.getLocation()?.observe(this, Observer<Location> {
+            location = it
+            if (!locationLoaded && location != null) {
+                locationLoaded = true
+            }
+        })
         v = inflater.inflate(R.layout.maps_fragment, container, false)
         return v
     }
 
-    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         dbManager = DatabaseManager(context)
@@ -95,13 +101,94 @@ class FavoriteFragment: Fragment(), MapHolder {
         floatingActionButton.hide()
         floatingActionButtonDirections.hide()
 
+        setUpBottomSheet()
+        setUpFabs()
+        setUpMap(savedInstanceState)
+
+    }
+
+    fun zoomToLocation(){
+        val myLoc = LatLng(location!!.latitude, location!!.longitude)
+        mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 9.5F))
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun setUpMap(savedInstanceState: Bundle?) {
+        mapView = v.findViewById(R.id.map)
+        mapView.onCreate(savedInstanceState)
+
+        mapView.getMapAsync { googleMap ->
+            if (googleMap != null) mMap = googleMap
+            mMap?.isMyLocationEnabled = true
+            mMap?.uiSettings?.isMapToolbarEnabled = false
+            mMap?.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.style_json))
+
+            if (location != null) {
+                val myLoc = LatLng(location!!.latitude, location!!.longitude)
+                mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 16F))
+            }
+
+            favoriteLiveData.observe(this, Observer<List<FavoriteAlko>> {
+                alkos.clear()
+                mMap?.clear()
+                favoriteList.clear()
+
+                for (alko in it) {
+                    mMap?.addMarker(MarkerOptions().position(LatLng(alko.latitude, alko.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)))
+                    favoriteList.add(alko)
+                    alkos.add(DatamodelConverters.favoriteAlkoToNetworkAlko(alko))
+                }
+
+                (viewAdapter as AlkoListAdapter).updateFavorites(favoriteList)
+                viewAdapter.notifyDataSetChanged()
+            })
+
+            mMap?.setOnMyLocationButtonClickListener {
+                Toast.makeText(context, "MyLocation button clicked", Toast.LENGTH_SHORT).show()
+                false
+            }
+
+            mMap?.setOnMyLocationClickListener {
+                Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
+            }
+
+            mMap?.setOnMapClickListener {
+                v.floatingActionButton!!.hide()
+                v.floatingActionButtonDirections!!.hide()
+            }
+
+            mMap!!.setOnMarkerClickListener { marker ->
+                TempData.alkoLat = marker.position.latitude
+                TempData.alkoLng = marker.position.longitude
+                Log.d("Marker: ", marker.position.latitude.toString() + " " + marker.position.longitude.toString())
+                Log.d("Temp: ", TempData.alkoLat.toString() + " " + TempData.alkoLng.toString())
+                v.floatingActionButton!!.show()
+                v.floatingActionButtonDirections!!.show()
+                false
+            }
+        }
+    }
+
+    private fun setUpFabs() {
+        floatingActionButton.setOnClickListener {
+            val fragManager = fragmentManager
+            fragManager?.beginTransaction()?.replace(R.id.container, ArFragment())?.commitNow()
+        }
+
+        floatingActionButtonDirections.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(
+                    "http://maps.google.com/maps?saddr=${TempData.myLat},${TempData.myLng}&daddr=${TempData.alkoLat},${TempData.alkoLng}"))
+            startActivity(intent)
+        }
+    }
+
+    private fun setUpBottomSheet() {
+
         recyclerView = v.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
             setHasFixedSize(false)
             layoutManager = viewManager
             adapter = viewAdapter
         }
-
-        locationRepository = LocationRepository.getInstance(activity!!)
 
         expandAnimatable.registerAnimationCallback(object : Animatable2.AnimationCallback() {
             override fun onAnimationEnd(drawable: Drawable?) {
@@ -130,84 +217,6 @@ class FavoriteFragment: Fragment(), MapHolder {
                 expandAnimatable.start()
             }
         }
-
-        floatingActionButton.setOnClickListener {
-            val fragManager = fragmentManager
-            fragManager?.beginTransaction()?.replace(R.id.container, ArFragment())?.commitNow()
-        }
-
-        floatingActionButtonDirections.setOnClickListener{
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(
-                    "http://maps.google.com/maps?saddr=${TempData.myLat},${TempData.myLng}&daddr=${TempData.alkoLat},${TempData.alkoLng}"))
-            startActivity(intent)
-        }
-
-        locationRepository.getLocation()?.observe(this, Observer<Location> {
-            location = it
-            if (!locationLoaded && location != null) {
-                locationLoaded = true
-            }
-        })
-
-        mapView = v.findViewById(R.id.map)
-        mapView.onCreate(savedInstanceState)
-
-        mapView.getMapAsync { googleMap ->
-
-            if (googleMap != null) mMap = googleMap
-            mMap?.isMyLocationEnabled = true
-            mMap?.uiSettings?.isMapToolbarEnabled = false
-
-            mMap?.setMapStyle(
-                    MapStyleOptions.loadRawResourceStyle(
-                            context, R.raw.style_json))
-
-            if (location != null) {
-                val myLoc = LatLng(location!!.latitude, location!!.longitude)
-                mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 16F))
-            }
-
-            favoriteLiveData.observe(this, Observer<List<FavoriteAlko>> {
-                alkos.clear()
-                mMap?.clear()
-                favoriteList.clear()
-                for (alko in it) {
-                    mMap?.addMarker(MarkerOptions().position(LatLng(alko.latitude, alko.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)))
-                    favoriteList.add(alko)
-                    alkos.add(DatamodelConverters.favoriteAlkoToNetworkAlko(alko))
-                }
-                (viewAdapter as AlkoListAdapter).updateFavorites(favoriteList)
-                viewAdapter.notifyDataSetChanged()
-            })
-
-
-            mMap?.setOnMyLocationButtonClickListener {
-                Toast.makeText(context, "MyLocation button clicked", Toast.LENGTH_SHORT).show()
-                false
-            }
-
-            mMap?.setOnMyLocationClickListener {
-                Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
-            }
-
-            mMap?.setOnMapClickListener {
-                v.floatingActionButton!!.hide()
-                v.floatingActionButtonDirections!!.hide()
-            }
-
-            mMap!!.setOnMarkerClickListener(object : GoogleMap.OnMarkerClickListener {
-                override fun onMarkerClick(marker: Marker): Boolean {
-                    TempData.alkoLat = marker.position.latitude
-                    TempData.alkoLng = marker.position.longitude
-                    Log.d("Marker: ", marker.position.latitude.toString() + " " + marker.position.longitude.toString())
-                    Log.d("Temp: ", TempData.alkoLat.toString() + " " + TempData.alkoLng.toString())
-                    v.floatingActionButton!!.show()
-                    v.floatingActionButtonDirections!!.show()
-                    return false
-                }
-            })
-        }
-
     }
 
     fun updateFavorites() {

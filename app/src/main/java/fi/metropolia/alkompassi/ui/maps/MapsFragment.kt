@@ -19,11 +19,9 @@ import android.os.Vibrator
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.NO_ID
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -42,13 +40,12 @@ import com.squareup.seismic.ShakeDetector
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.data.TempData
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
-import fi.metropolia.alkompassi.ar.ArFragment
+import fi.metropolia.alkompassi.ui.ar.ArFragment
 import fi.metropolia.alkompassi.data.entities.FavoriteAlko
 import fi.metropolia.alkompassi.datamodels.Alko
 import fi.metropolia.alkompassi.repositories.LocationRepository
-import fi.metropolia.alkompassi.util.DatabaseManager
+import fi.metropolia.alkompassi.utils.DatabaseManager
 import fi.metropolia.alkompassi.utils.MapHolder
-import kotlinx.android.synthetic.main.maps_activity.*
 import kotlinx.android.synthetic.main.maps_fragment.*
 import kotlinx.android.synthetic.main.maps_fragment.view.*
 
@@ -90,14 +87,15 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         if (location != null && !fetchingAlkoLocations) {
             fetchingAlkoLocations = true
             viewModel.beginSearch(location!!)
+            zoomToLocation()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(VibrationEffect.createOneShot(500,VibrationEffect.DEFAULT_AMPLITUDE))
-            }else{
-                //deprecated in API 26
+                vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                //deprecated in API 26 -- Lint warning suppressed
+                @Suppress("DEPRECATION")
                 vibrator.vibrate(500)
             }
         }
-
     }
 
     override fun getLocation(): Location? {
@@ -115,11 +113,9 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             if (!locationLoaded && location != null) {
                 locationLoaded = true
                 viewModel.beginSearch(location!!)
-                val myLoc = LatLng(location!!.latitude, location!!.longitude)
-                mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 9F))
+                zoomToLocation()
             }
         })
-
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -127,7 +123,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         return v
     }
 
-    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -147,14 +142,99 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         viewAdapter = AlkoListAdapter(alkos, this, context, favoriteList)
         floatingActionButton.hide()
         floatingActionButtonDirections.hide()
-
-        if ((ContextCompat.checkSelfPermission(context!!, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
-            ActivityCompat.requestPermissions(activity!!, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 0)
-        }
-
-
         vibrator = activity?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
+        setupBottomsheet()
+        setupFabs()
+        setupMap(savedInstanceState)
+        checkGoogleApiAvailability()
+
+    }
+
+    private fun checkGoogleApiAvailability() {
+        val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
+
+        if (availability == ConnectionResult.SUCCESS) {
+            Log.d("DBG", "GOOGLE SERVICE AVAILABLE")
+        } else if (GoogleApiAvailability.getInstance().isUserResolvableError(availability)) {
+            Log.d("DBG", "FIXABLE ERROR")
+            GoogleApiAvailability.getInstance().getErrorDialog(activity, availability, dialogRequest)
+        }
+    }
+
+    fun zoomToLocation(){
+        val myLoc = LatLng(location!!.latitude, location!!.longitude)
+        mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 9.5F))
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun setupMap(savedInstanceState: Bundle?) {
+        mapView = v.findViewById(R.id.map)
+        mapView.onCreate(savedInstanceState)
+
+        mapView.getMapAsync { googleMap ->
+
+            if (googleMap != null) mMap = googleMap
+            mMap?.isMyLocationEnabled = true
+            mMap?.uiSettings?.isMapToolbarEnabled = false
+            mMap?.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.style_json))
+
+            // Listen for the Alko locations
+            viewModel.getNearAlkos()?.observe(this, Observer<List<Alko>> { alkolist ->
+                alkos.clear()
+                mMap?.clear()
+                for (alko in alkolist) {
+                    if (favoriteList.find { it.placeID == alko.placeID } != null) {
+                        mMap?.addMarker(MarkerOptions().position(LatLng(alko.lat, alko.lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)))
+                    } else {
+                        mMap?.addMarker(MarkerOptions().position(LatLng(alko.lat, alko.lng)))
+                    }
+                    alkos.add(alko)
+                }
+                viewAdapter.notifyDataSetChanged()
+                fetchingAlkoLocations = false
+            })
+
+            mMap?.setOnMyLocationButtonClickListener {
+                Toast.makeText(context, "MyLocation button clicked", Toast.LENGTH_SHORT).show()
+                false
+            }
+
+            mMap?.setOnMyLocationClickListener {
+                Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
+            }
+
+            mMap?.setOnMapClickListener {
+                v.floatingActionButton!!.hide()
+                v.floatingActionButtonDirections!!.hide()
+            }
+
+            mMap!!.setOnMarkerClickListener { marker ->
+                TempData.alkoLat = marker.position.latitude
+                TempData.alkoLng = marker.position.longitude
+                Log.d("Marker: ", marker.position.latitude.toString() + " " + marker.position.longitude.toString())
+                Log.d("Temp: ", TempData.alkoLat.toString() + " " + TempData.alkoLng.toString())
+                v.floatingActionButton!!.show()
+                v.floatingActionButtonDirections!!.show()
+                false
+            }
+        }
+    }
+
+    private fun setupFabs() {
+        floatingActionButton.setOnClickListener {
+            val fragManager = fragmentManager
+            fragManager?.beginTransaction()?.replace(R.id.container, ArFragment())?.commitNow()
+        }
+
+        floatingActionButtonDirections.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(
+                    "http://maps.google.com/maps?saddr=${TempData.myLat},${TempData.myLng}&daddr=${TempData.alkoLat},${TempData.alkoLng}"))
+            startActivity(intent)
+        }
+    }
+
+    private fun setupBottomsheet() {
         recyclerView = v.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
             setHasFixedSize(false)
             layoutManager = viewManager
@@ -166,7 +246,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 super.onAnimationEnd(drawable)
                 collapseImageView.visibility = View.VISIBLE
                 expandImageView.visibility = View.GONE
-
             }
         })
 
@@ -187,84 +266,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             } else {
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
                 expandAnimatable.start()
-
             }
-        }
-
-        floatingActionButton.setOnClickListener {
-            val fragManager = fragmentManager
-            fragManager?.beginTransaction()?.replace(R.id.container, ArFragment())?.commitNow()
-        }
-
-        floatingActionButtonDirections.setOnClickListener{
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(
-                    "http://maps.google.com/maps?saddr=${TempData.myLat},${TempData.myLng}&daddr=${TempData.alkoLat},${TempData.alkoLng}"))
-            startActivity(intent)
-        }
-
-        mapView = v.findViewById(R.id.map)
-        mapView.onCreate(savedInstanceState)
-
-        mapView.getMapAsync { googleMap ->
-
-            if (googleMap != null) mMap = googleMap
-            mMap?.isMyLocationEnabled = true
-            mMap?.uiSettings?.isMapToolbarEnabled = false
-            mMap?.setMapStyle(
-                    MapStyleOptions.loadRawResourceStyle(
-                            context, R.raw.style_json))
-
-            // Listen for the Alko locations
-            viewModel.getNearAlkos()?.observe(this, Observer<List<Alko>> {
-                alkos.clear()
-                mMap?.clear()
-                for (alko in it) {
-                    if (favoriteList.find { it.placeID == alko.placeID } != null) {
-                        mMap?.addMarker(MarkerOptions().position(LatLng(alko.lat, alko.lng)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)))
-                    } else {
-                        mMap?.addMarker(MarkerOptions().position(LatLng(alko.lat, alko.lng)))
-                    }
-
-                        alkos.add(alko)
-                }
-                viewAdapter.notifyDataSetChanged()
-                fetchingAlkoLocations = false
-            })
-
-            mMap?.setOnMyLocationButtonClickListener {
-                Toast.makeText(context, "MyLocation button clicked", Toast.LENGTH_SHORT).show()
-                false
-            }
-
-            mMap?.setOnMyLocationClickListener {
-                Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
-            }
-
-            mMap?.setOnMapClickListener {
-                v.floatingActionButton!!.hide()
-                v.floatingActionButtonDirections!!.hide()
-            }
-
-            mMap!!.setOnMarkerClickListener(object : GoogleMap.OnMarkerClickListener {
-                override fun onMarkerClick(marker: Marker): Boolean {
-                    TempData.alkoLat = marker.position.latitude
-                    TempData.alkoLng = marker.position.longitude
-                    Log.d("Marker: ", marker.position.latitude.toString() + " " + marker.position.longitude.toString())
-                    Log.d("Temp: ", TempData.alkoLat.toString() + " " + TempData.alkoLng.toString())
-                    v.floatingActionButton!!.show()
-                    v.floatingActionButtonDirections!!.show()
-                    return false
-                }
-            })
-        }
-
-        val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
-
-        if (availability == ConnectionResult.SUCCESS) {
-            Log.d("DBG", "GOOGLE SERVICE AVAILABLE")
-        } else if (GoogleApiAvailability.getInstance().isUserResolvableError(availability)) {
-            Log.d("DBG", "FIXABLE ERROR")
-            GoogleApiAvailability.getInstance().getErrorDialog(activity, availability, dialogRequest)
         }
     }
 
@@ -278,20 +280,4 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
         mapView.onResume()
     }
 
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        when (requestCode) {
-            1 -> {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return
-            }
-        }
-
-    }
 }

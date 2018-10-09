@@ -5,14 +5,6 @@ import fi.metropolia.alkompassi.datamodels.Alko
 
 abstract class DatamodelConverters {
     companion object {
-        fun networkAlkoToFavoriteAlko(alko: Alko): FavoriteAlko {
-            return FavoriteAlko(
-                    alko.placeID,
-                    alko.name,
-                    alko.lat,
-                    alko.lng)
-        }
-
         fun favoriteAlkoToNetworkAlko(alko: FavoriteAlko): Alko {
             return Alko(
                     alko.name,

@@ -6,7 +6,7 @@ import fi.metropolia.alkompassi.datamodels.Alko
 abstract class LocationUtility {
     companion object {
 
-        fun distToAlko(alko: Alko, location: Location?) : Double{
+        fun distToAlko(alko: Alko, location: Location?): Double {
             return distFrom(location?.latitude, location?.longitude, alko.lat, alko.lng)
         }
 
@@ -25,8 +25,6 @@ abstract class LocationUtility {
         }
 
     }
-
-
 
 
 }

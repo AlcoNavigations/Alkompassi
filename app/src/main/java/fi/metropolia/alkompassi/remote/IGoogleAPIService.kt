@@ -9,7 +9,7 @@ import retrofit2.http.Query
 
 interface IGoogleAPIService {
 
-    @GET ("api/place/nearbysearch/json?")
+    @GET("api/place/nearbysearch/json?")
     fun getAlkoAddresses(@Query("location") location: String,
                          @Query("radius") radius: String,
                          @Query("type") type: String,

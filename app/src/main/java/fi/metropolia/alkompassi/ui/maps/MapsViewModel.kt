@@ -42,31 +42,27 @@ class MapsViewModel : ViewModel() {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 { result ->
-                                    if (result.results.isEmpty()) {
-
-                                    }
                                     val alkolist = mutableListOf<Alko>()
                                     for (alko in result.results) {
                                         Log.d("Alko found: ", "${alko.geometry.location.lat} ${alko.geometry.location.lng} ${alko.placeID}")
                                         refreshDegrees(location.latitude, location.longitude)
-                                        alkolist.add(Alko(alko.name, alko.geometry.location.lat,alko.geometry.location.lng, alko.placeID))
+                                        alkolist.add(Alko(alko.name, alko.geometry.location.lat, alko.geometry.location.lng, alko.placeID))
                                     }
                                     nearAlkos?.value = alkolist
                                 }
                                 ,
-                                { error -> Log.d("getAlkoError: ",error.message) }
+                                { error -> Log.d("getAlkoError: ", error.message) }
                         )
         if (disposable != null) compositeDisposable.add(disposable)
     }
 
-    fun refreshDegrees(currLat: Double, currLon: Double){
+    fun refreshDegrees(currLat: Double, currLon: Double) {
         degrees = getDegreesToAlko(currLat, currLon, TempData.alkoLat, TempData.alkoLng)
         TempData.alkoDegrees = degrees
     }
 
-    fun getDegreesToAlko(startLat: Double, startLon: Double, destinationLat: Double, destinationLon: Double) : Double{
-
-        val dLon = (destinationLon-startLon)
+    fun getDegreesToAlko(startLat: Double, startLon: Double, destinationLat: Double, destinationLon: Double): Double {
+        val dLon = (destinationLon - startLon)
         val y = Math.sin(dLon) * Math.cos(destinationLat)
         val x = Math.cos(startLat) * Math.sin(destinationLat) - Math.sin(startLat) * Math.cos(destinationLat) * Math.cos(dLon)
         var brng = Math.toDegrees((Math.atan2(y, x)))
