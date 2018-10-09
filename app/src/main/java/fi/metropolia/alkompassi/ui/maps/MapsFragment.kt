@@ -176,7 +176,8 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
             if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                 collapseAnimatable.start()
-
+                floatingActionButton.hide()
+                floatingActionButtonDirections.hide()
             } else {
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
                 expandAnimatable.start()
