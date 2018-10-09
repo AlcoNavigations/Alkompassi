@@ -54,5 +54,9 @@ class AlkoListAdapter(private var dataset: List<Alko>, private val mapHolder: Ma
         }
     }
 
+    fun updateFavorites(newFavorites: MutableList<FavoriteAlko>) {
+        favoriteAlkos = newFavorites
+    }
+
     class AlkoListItemViewHolder(val listItem: View) : RecyclerView.ViewHolder(listItem)
 }

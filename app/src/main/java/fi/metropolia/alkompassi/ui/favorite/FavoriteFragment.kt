@@ -61,7 +61,7 @@ class FavoriteFragment: Fragment(), MapHolder {
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
     private lateinit var bottomSheetHeader: View
-    private lateinit var favoriteList: List<FavoriteAlko>
+    private lateinit var favoriteList: MutableList<FavoriteAlko>
     private lateinit var sensorManager: SensorManager
     private lateinit var dbManager: DatabaseManager
 
@@ -165,10 +165,13 @@ class FavoriteFragment: Fragment(), MapHolder {
             favoriteLiveData.observe(this, Observer<List<FavoriteAlko>> {
                 alkos.clear()
                 mMap?.clear()
+                favoriteList.clear()
                 for (alko in it) {
                     mMap?.addMarker(MarkerOptions().position(LatLng(alko.latitude, alko.longitude)))
                     alkos.add(DatamodelConverters.favoriteAlkoToNetworkAlko(alko))
+                    favoriteList.add(alko)
                 }
+                (viewAdapter as AlkoListAdapter).updateFavorites(favoriteList)
                 viewAdapter.notifyDataSetChanged()
             })
 
