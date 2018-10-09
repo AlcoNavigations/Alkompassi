@@ -51,6 +51,7 @@ class MapsActivity : AppCompatActivity(){
             }
 
         })
+
     }
 
     class MapsFragmentPagerAdapter(fragmentManager: FragmentManager?, val fragments: Map<String, Fragment>) : FragmentPagerAdapter(fragmentManager) {
