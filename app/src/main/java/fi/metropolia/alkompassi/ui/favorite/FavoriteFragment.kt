@@ -2,10 +2,12 @@ package fi.metropolia.alkompassi.ui.favorite
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.Drawable
 import android.hardware.SensorManager
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -28,6 +30,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import fi.metropolia.alkompassi.R
 import fi.metropolia.alkompassi.adapters.AlkoListAdapter
+import fi.metropolia.alkompassi.ar.ArFragment
 import fi.metropolia.alkompassi.data.TempData
 import fi.metropolia.alkompassi.data.entities.FavoriteAlko
 import fi.metropolia.alkompassi.datamodels.Alko
@@ -35,6 +38,7 @@ import fi.metropolia.alkompassi.repositories.LocationRepository
 import fi.metropolia.alkompassi.util.DatabaseManager
 import fi.metropolia.alkompassi.utils.DatamodelConverters
 import fi.metropolia.alkompassi.utils.MapHolder
+import kotlinx.android.synthetic.main.maps_fragment.*
 
 class FavoriteFragment: Fragment(), MapHolder {
 
@@ -88,6 +92,8 @@ class FavoriteFragment: Fragment(), MapHolder {
         bottomSheetHeader = v.findViewById(R.id.bottom_sheet_header)
         viewManager = LinearLayoutManager(context)
         viewAdapter = AlkoListAdapter(alkos, this, context, favoriteList)
+        floatingActionButton.hide()
+        floatingActionButtonDirections.hide()
 
         recyclerView = v.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
             setHasFixedSize(false)
@@ -121,6 +127,17 @@ class FavoriteFragment: Fragment(), MapHolder {
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
                 expandAnimatable.start()
             }
+        }
+
+        floatingActionButton.setOnClickListener {
+            val fragManager = fragmentManager
+            fragManager?.beginTransaction()?.replace(R.id.container, ArFragment())?.commitNow()
+        }
+
+        floatingActionButtonDirections.setOnClickListener{
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(
+                    "http://maps.google.com/maps?saddr=${TempData.myLat},${TempData.myLng}&daddr=${TempData.alkoLat},${TempData.alkoLng}"))
+            startActivity(intent)
         }
 
         locationRepository.getLocation()?.observe(this, Observer<Location> {
