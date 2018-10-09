@@ -37,6 +37,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -210,8 +211,10 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
 
             if (googleMap != null) mMap = googleMap
             mMap?.isMyLocationEnabled = true
-
             mMap?.uiSettings?.isMapToolbarEnabled = false
+            mMap?.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            context, R.raw.style_json))
 
             if (location != null) {
                 val myLoc = LatLng(location!!.latitude, location!!.longitude)
