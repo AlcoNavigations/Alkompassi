@@ -223,9 +223,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 activity!!.floatingActionButtonDirections!!.hide()
             }
 
-
-
-
+            
             mMap!!.setOnMarkerClickListener(object : GoogleMap.OnMarkerClickListener {
                 override fun onMarkerClick(marker: Marker): Boolean {
                     TempData.alkoLat = marker.position.latitude
