@@ -27,8 +27,8 @@ class DatabaseManager(context: Context?){
     fun doAsyncDeleteFavorites(dataset: List<Alko>, position: Int, favoriteAlkos: List<FavoriteAlko>) {
         fun doAsync(dataset: List<Alko>, position: Int): Deferred<Unit> {
             return async {
-                if(favoriteAlkos.find { it.PlaceID == dataset[position].placeID} != null) {
-                    mDb?.favoriteLocationDao()?.delete(favoriteAlkos.find { it.PlaceID == dataset[position].placeID }!!)
+                if(favoriteAlkos.find { it.placeID == dataset[position].placeID} != null) {
+                    mDb?.favoriteLocationDao()?.delete(favoriteAlkos.find { it.placeID == dataset[position].placeID }!!)
                 }
             }
         }

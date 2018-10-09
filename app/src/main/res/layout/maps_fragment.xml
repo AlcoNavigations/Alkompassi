@@ -1,11 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MapsActivity">
+
+    <include
+        android:id="@+id/include"
+        layout="@layout/map_screen" />
+
+    <include layout="@layout/bottomsheet"
+        android:id="@+id/bottom_sheet"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="60dp"
+        android:src="@drawable/ic_camera_alt_black_24dp"
+        app:backgroundTint="@color/colorAccent"
+        app:fabSize="normal"
+        android:layout_gravity="bottom|right" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButtonDirections"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="23dp"
+        android:layout_marginBottom="130dp"
+        android:src="@drawable/ic_directions_black_24dp"
+        app:backgroundTint="@color/common_google_signin_btn_text_dark_default"
+        app:fabSize="mini"
+        android:layout_gravity="bottom|right" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
