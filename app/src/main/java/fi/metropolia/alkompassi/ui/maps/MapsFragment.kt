@@ -250,17 +250,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                     TempData.alkoLng = marker.position.longitude
                     Log.d("Marker: ", marker.position.latitude.toString() + " " + marker.position.longitude.toString())
                     Log.d("Temp: ", TempData.alkoLat.toString() + " " + TempData.alkoLng.toString())
-
-                    viewModel.getNearAlkos()?.observe(activity!!, Observer<List<Alko>> {
-                        for (alko in it) {
-                            if(alko.lat == marker.position.latitude && alko.lng == marker.position.longitude) {
-                                TempData.alkoName = alko.name
-                                Log.d("Alko name: ", TempData.alkoName)
-                            }
-                        }
-                        viewAdapter.notifyDataSetChanged()
-                    })
-
                     v.floatingActionButton!!.show()
                     v.floatingActionButtonDirections!!.show()
                     return false

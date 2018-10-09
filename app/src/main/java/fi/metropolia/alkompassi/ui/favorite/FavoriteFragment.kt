@@ -9,6 +9,7 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,6 +40,7 @@ import fi.metropolia.alkompassi.util.DatabaseManager
 import fi.metropolia.alkompassi.utils.DatamodelConverters
 import fi.metropolia.alkompassi.utils.MapHolder
 import kotlinx.android.synthetic.main.maps_fragment.*
+import kotlinx.android.synthetic.main.maps_fragment.view.*
 
 class FavoriteFragment: Fragment(), MapHolder {
 
@@ -185,11 +187,19 @@ class FavoriteFragment: Fragment(), MapHolder {
                 Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
             }
 
+            mMap?.setOnMapClickListener {
+                v.floatingActionButton!!.hide()
+                v.floatingActionButtonDirections!!.hide()
+            }
+
             mMap!!.setOnMarkerClickListener(object : GoogleMap.OnMarkerClickListener {
                 override fun onMarkerClick(marker: Marker): Boolean {
                     TempData.alkoLat = marker.position.latitude
                     TempData.alkoLng = marker.position.longitude
-
+                    Log.d("Marker: ", marker.position.latitude.toString() + " " + marker.position.longitude.toString())
+                    Log.d("Temp: ", TempData.alkoLat.toString() + " " + TempData.alkoLng.toString())
+                    v.floatingActionButton!!.show()
+                    v.floatingActionButtonDirections!!.show()
                     return false
                 }
             })
