@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Alkompassi</string>
+    <string name="title_activity_maps">Alkompassi</string>
+    <string name="near_alko_stores">Lähimmät Alkot</string>
+    <string name="favorite_alkos">Sinun suosikki Alkosi</string>
+</resources>
