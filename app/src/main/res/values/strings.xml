@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Alkompassi</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">Alkompassi</string>
     <string name="near_alko_stores">Near Alko stores</string>
+    <string name="favorite_alkos">Your favorite Alkos</string>
 </resources>

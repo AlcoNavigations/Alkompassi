@@ -14,7 +14,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -37,6 +36,7 @@ import fi.metropolia.alkompassi.repositories.LocationRepository
 import fi.metropolia.alkompassi.utils.DatabaseManager
 import fi.metropolia.alkompassi.utils.DatamodelConverters
 import fi.metropolia.alkompassi.utils.MapHolder
+import kotlinx.android.synthetic.main.bottomsheet_header_layout.*
 import kotlinx.android.synthetic.main.maps_fragment.*
 import kotlinx.android.synthetic.main.maps_fragment.view.*
 
@@ -176,6 +176,8 @@ class FavoriteFragment : Fragment(), MapHolder {
     }
 
     private fun setUpBottomSheet() {
+
+        textView_bottomsheet_header.text = getString(R.string.favorite_alkos)
 
         recyclerView = v.findViewById<RecyclerView>(R.id.RecyclerView_nearby_alkolist).apply {
             setHasFixedSize(false)
