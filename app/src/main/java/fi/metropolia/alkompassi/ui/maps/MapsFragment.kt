@@ -164,7 +164,7 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
 
     fun zoomToLocation(){
         val myLoc = LatLng(location!!.latitude, location!!.longitude)
-        mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 9.5F))
+        mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc, 10.5F))
     }
 
     @SuppressLint("MissingPermission")

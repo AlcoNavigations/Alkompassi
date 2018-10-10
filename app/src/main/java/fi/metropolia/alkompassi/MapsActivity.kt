@@ -1,5 +1,6 @@
 package fi.metropolia.alkompassi
 
+import android.content.Context
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -37,7 +38,8 @@ class MapsActivity : AppCompatActivity() {
 
         fragmentPagerAdapter = MapsFragmentPagerAdapter(
                 supportFragmentManager,
-                mapOf("nearby" to nearbyFragment, "favorite" to favoriteFragment))
+                mapOf("nearby" to nearbyFragment, "favorite" to favoriteFragment),
+                this)
 
         mViewPager = findViewById(R.id.pager)
         mViewPager.adapter = fragmentPagerAdapter
@@ -74,7 +76,7 @@ class MapsActivity : AppCompatActivity() {
         })
     }
 
-    class MapsFragmentPagerAdapter(fragmentManager: FragmentManager?, private val fragments: Map<String, Fragment>) : FragmentPagerAdapter(fragmentManager) {
+    class MapsFragmentPagerAdapter(fragmentManager: FragmentManager?, private val fragments: Map<String, Fragment>, val context: Context) : FragmentPagerAdapter(fragmentManager) {
         override fun getItem(position: Int): Fragment? {
             return when (position) {
                 0 -> fragments["nearby"]
@@ -85,8 +87,8 @@ class MapsActivity : AppCompatActivity() {
 
         override fun getPageTitle(position: Int): CharSequence? {
             return when (position) {
-                0 -> "Nearby"
-                1 -> "Favorite"
+                0 -> context.getString(R.string.nearby)
+                1 -> context.getString(R.string.favorite)
                 else -> null
             }
         }

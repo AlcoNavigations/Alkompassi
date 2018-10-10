@@ -4,4 +4,6 @@
     <string name="title_activity_maps">Alkompassi</string>
     <string name="near_alko_stores">Lähimmät Alkot</string>
     <string name="favorite_alkos">Sinun suosikki Alkosi</string>
+    <string name="nearby">Lähellä</string>
+    <string name="favorite">Suosikit</string>
 </resources>
