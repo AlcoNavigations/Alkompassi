@@ -195,15 +195,6 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
                 fetchingAlkoLocations = false
             })
 
-            mMap?.setOnMyLocationButtonClickListener {
-                Toast.makeText(context, "MyLocation button clicked", Toast.LENGTH_SHORT).show()
-                false
-            }
-
-            mMap?.setOnMyLocationClickListener {
-                Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
-            }
-
             mMap?.setOnMapClickListener {
                 v.floatingActionButton!!.hide()
                 v.floatingActionButtonDirections!!.hide()
@@ -224,7 +215,9 @@ class MapsFragment : Fragment(), MapHolder, ShakeDetector.Listener {
     private fun setupFabs() {
         floatingActionButton.setOnClickListener {
             val fragManager = fragmentManager
-            fragManager?.beginTransaction()?.replace(R.id.container, ArFragment())?.commitNow()
+            val fragmentTransaction = fragManager?.beginTransaction()
+            fragmentTransaction?.replace(R.id.container, ArFragment())
+            fragmentTransaction?.addToBackStack(null)?.commit()
         }
 
         floatingActionButtonDirections.setOnClickListener {

@@ -143,15 +143,6 @@ class FavoriteFragment : Fragment(), MapHolder {
                 viewAdapter.notifyDataSetChanged()
             })
 
-            mMap?.setOnMyLocationButtonClickListener {
-                Toast.makeText(context, "MyLocation button clicked", Toast.LENGTH_SHORT).show()
-                false
-            }
-
-            mMap?.setOnMyLocationClickListener {
-                Toast.makeText(context, "Current location:\n$it", Toast.LENGTH_LONG).show()
-            }
-
             mMap?.setOnMapClickListener {
                 v.floatingActionButton!!.hide()
                 v.floatingActionButtonDirections!!.hide()
@@ -172,7 +163,9 @@ class FavoriteFragment : Fragment(), MapHolder {
     private fun setUpFabs() {
         floatingActionButton.setOnClickListener {
             val fragManager = fragmentManager
-            fragManager?.beginTransaction()?.replace(R.id.container, ArFragment())?.commitNow()
+            val fragmentTransaction = fragManager?.beginTransaction()
+            fragmentTransaction?.replace(R.id.container, ArFragment())
+            fragmentTransaction?.addToBackStack(null)?.commit()
         }
 
         floatingActionButtonDirections.setOnClickListener {
