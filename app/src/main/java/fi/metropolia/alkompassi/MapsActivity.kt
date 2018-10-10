@@ -46,13 +46,15 @@ class MapsActivity : AppCompatActivity() {
 
         // Replace the default tab slide animation with fadeOut/fadeIn
         pager.setPageTransformer(true) { page, position ->
-            page.translationX = page.width * -position
-            if (position <= -1.0F || position >= 1.0F) {
+            if(position <= -1.0F || position >= 1.0F) {
+                page.translationX = page.width * position
                 page.alpha = 0.0F
-            } else if (position == 0.0F) {
+            } else if( position == 0.0F ) {
+                page.translationX = page.width * position
                 page.alpha = 1.0F
             } else {
                 // position is between -1.0F & 0.0F OR 0.0F & 1.0F
+                page.translationX = page.width * -position
                 page.alpha = 1.0F - Math.abs(position)
             }
         }
