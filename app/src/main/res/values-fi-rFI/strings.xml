@@ -6,4 +6,5 @@
     <string name="favorite_alkos">Sinun suosikki Alkosi</string>
     <string name="nearby">Lähellä</string>
     <string name="favorite">Suosikit</string>
+    <string name="likeButtonDescription">Aseta suosikki</string>
 </resources>

@@ -6,4 +6,5 @@
     <string name="favorite_alkos">Din favorit Alkos</string>
     <string name="nearby">Närmaste</string>
     <string name="favorite">Favoriter</string>
+    <string name="likeButtonDescription">Sätta favorit</string>
 </resources>

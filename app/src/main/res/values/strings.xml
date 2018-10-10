@@ -5,4 +5,6 @@
     <string name="favorite_alkos">Your favorite Alkos</string>
     <string name="nearby">Nearby</string>
     <string name="favorite">Favorite</string>
+    <string name="likeButtonDescription">Set favourite</string>
+    "
 </resources>
